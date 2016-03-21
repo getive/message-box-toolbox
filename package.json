@@ -1,0 +1,25 @@
+{
+  "name": "message-box-data-generator",
+  "version": "1.0.0",
+  "description": "消息盒子数据生成器，演示用。",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infohold-works/message-box-data-generator.git"
+  },
+  "author": "infohold-works",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/infohold-works/message-box-data-generator/issues"
+  },
+  "homepage": "https://github.com/infohold-works/message-box-data-generator#readme",
+  "devDependencies": {
+    "electron-prebuilt": "^0.36.7",
+    "gulp": "^3.9.1",
+    "socket.io": "^1.4.5"
+  }
+}

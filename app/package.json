@@ -1,0 +1,23 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Starter for electron app with Vue.js",
+  "main": "app.js",
+  "dependencies": {
+    "vue": "^1.0.16",
+    "vue-router": "^0.7.11",
+    "bootstrap": "^3.3.6",
+    "vue-resource": "^0.7.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "app",
+    "electron",
+    "Vue.js"
+  ],
+  "author": "malanore",
+  "license": "MIT"
+}
