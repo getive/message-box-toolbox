@@ -4,7 +4,12 @@ var VueResource = require('vue-resource');
 
 var serverURL = 'http://localhost:3000';
 var io = require('socket.io-client');
-var socket = io.connect(serverURL,{'force new connection': true});
+var socket = io.connect(serverURL, { 'force new connection': true });
+
+var moment = require('moment');
+// 连接mongodb
+var conf = require('../config/env_development.json');
+var connect = require('./mongodb-server/server').connect(conf.test.url, conf.test.options);
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
@@ -24,97 +29,87 @@ var vm = new Vue({
         messages: []
     },
 
-    // Anything within the ready function will run when the application loads
-    ready: function () {
-        // When the application loads, we want to call the method that initializes
-        // some data
-        this.fetchMessages();
-        this.connect(socket);
-    },
-
     // Methods we want to use in our application are registered here
     methods: {
+        testMessage: function() {
+            var socket = io.connect(serverURL, { 'force new connection': true });
+            var self = this;
+            connect(function(db) {
+                var users = db.collection('mb_user');
+                var summaries = db.collection('mb_summaries');
+                var messages = db.collection('mb_messages');
 
-        // We dedicate a method to retrieving and setting some data
-        fetchMessages: function () {
-            this.$http.get('./assets/messages.json', function (data) {
-                this.$set('messages', data);
-            }).error(function (data, status, request) {
-                console.log('fail' + status + "," + request);
-            })
-
-            //this.$http.get('http://8.1.3.213:8799/iebp4jlsi/electradeplat/forHallPayTranList.do', function (data) {
-            //    console.log(data);
-            //}).error(function (data, status, request) {
-            //    console.log('fail' + status + "," + request);
-            //})
-        },
-
-        // Adds an message to the existing messages array
-        addMessage: function () {
-            if (this.message.title) {
-                this.messages.push(this.message);
-                this.message = {
-                    title: '',
-                    description: '',
-                    date: ''
-                };
-            }
-        },
-
-        deleteMessage: function (message) {
-            if (confirm("Are you sure you want to delete this message?")) {
-                // $remove is a Vue convenience method similar to splice
-                this.messages.$remove(message);
-            }
-        },
-
-        connect: function () {
-            socket.on('connect', function () {
-                logData('sourceClient: connected');
-                socket.emit('login', 'sourceClient is connected');
-            })
-        },
-
-        testMessage: function () {
-            var socket = io.connect(serverURL,{'force new connection': true});
-            socket.on('connect', function (){
-                // socket.emit('login', 'sourceClient is connected');
-                // var mesContent = {
-                //     title:  'test message',
-                //     description:   'this is first message',
-                //     date:   '2016-02-26'
-                // }
+                users.find({ username: self.message.username }).toArray(function(err, doc) {
+                    if (doc.length > 0) { //private信息
+                        summaries.find({}).toArray(function(err, docs) {
+                            summaries.save({
+                                type: "private",
+                                user_id: doc[0].userid,
+                                user_brc: "",
+                                id: docs.length + 1,
+                                typeid: self.selected,
+                                title: self.message.title,
+                                author: self.message.author,
+                                desc: self.message.description.substring(0, 50),
+                                sendtime: self.nowTime(),
+                                read: false
+                            });
+                            messages.save({
+                                id: docs.length + 1,
+                                typeid: self.selected,
+                                title: self.message.title,
+                                author: self.message.author,
+                                content: self.message.description,
+                                sendtime: self.nowTime(),
+                            });
+                        });
+                    } else { //public信息
+                        summaries.find({}).toArray(function(err, docs) {
+                            summaries.save({
+                                user_id: "",
+                                type: "public",
+                                user_brc: "",
+                                id: docs.length + 1,
+                                typeid: self.typeid,
+                                title: self.message.title,
+                                author: self.message.author,
+                                desc: self.message.description.substring(0, 50),
+                                sendtime: self.nowTime(),
+                                read: false
+                            });
+                            messages.save({
+                                id: docs.length + 1,
+                                typeid: self.typeid,
+                                title: self.message.title,
+                                author: self.message.author,
+                                content: self.message.description,
+                                sendtime: self.nowTime(),
+                            });
+                        });
+                    }
+                });
+            });
+            socket.on('connect', function() {
                 var mesContent = {
-                    typeid: 3,
-                    title:  '征集核定',
-                    author: '吉林省社保局',
-                    desc:   '征集核定信息',
-                    content: '今日收到吉林省社保局征集核定信息'
+                    title: self.message.title,
+                    desc: self.message.description.substring(0, 10)
                 }
-                // // listen to news event raised by the server
-                // socket.on('welcome', function (data) {
-                //     logData(data);
-                //     // raise an event on the server
-                //     socket.emit('new message',mesContent);
-                // });
-                socket.emit('public message',mesContent);
+                socket.emit('public message', mesContent);
             });
         },
-
-        showMessage: function (data) {
-            this.message = data;
+        nowTime: function() {
+            return moment().format('YYYY-MM-DD HH:mm:ss');
         }
     }
 })
 
 // 定义组件
 var Index = Vue.extend({
-    template: '<p>首页</p>'
+    // template: '<p>首页</p>'
 })
 
 var Mesbox = Vue.extend({
-    template: '<li>消息盒子</li>'
+    // template: '<li>消息盒子</li>'
 })
 
 // 路由器需要一个根组件。
@@ -130,33 +125,18 @@ var router = new VueRouter()
 // 创建的组件构造函数，也可以是一个组件选项对象。
 // 稍后我们会讲解嵌套路由
 router.map({
-    '/': {
-        component: Index
-    },
-    '/mesbox': {
-        component: Mesbox
-    },
-    '/test': {
-        component: {
-            template: '<p>测试链接</p>'
+        '/': {
+            component: Index
+        },
+        '/mesbox': {
+            component: Mesbox
+        },
+        '/test': {
+            component: {
+                template: '<p>测试链接</p>'
+            }
         }
-    }
-})
-
-// 现在我们可以启动应用了！
-// 路由器会创建一个 App 实例，并且挂载到选择符 #app 匹配的元素上。
+    })
+    // 现在我们可以启动应用了！
+    // 路由器会创建一个 App 实例，并且挂载到选择符 #app 匹配的元素上。
 router.start(App, '#app')
-
-// Add a connect listener
-socket.on('connect', function() {
-    socket.on('message',function (data) {
-        logData(data);
-        vm.showMessage(data);
-    });
-});
-
-function logData (message) {
-    var date = new Date();
-    var time = "[" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "]";
-    console.log(time + message);
-}
