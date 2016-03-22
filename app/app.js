@@ -39,6 +39,12 @@ var vm = new Vue({
                 var summaries = db.collection('mb_summaries');
                 var messages = db.collection('mb_messages');
 
+                var mesContent = {
+                    username: self.message.username,
+                    title: self.message.title,
+                    desc: self.message.description.substring(0, 10)
+                }
+
                 users.find({ username: self.message.username }).toArray(function(err, doc) {
                     if (doc.length > 0) { //private信息
                         summaries.find({}).toArray(function(err, docs) {
@@ -63,6 +69,9 @@ var vm = new Vue({
                                 sendtime: self.nowTime(),
                             });
                         });
+
+                        socket.emit('private message', mesContent);
+
                     } else { //public信息
                         summaries.find({}).toArray(function(err, docs) {
                             summaries.save({
@@ -86,15 +95,11 @@ var vm = new Vue({
                                 sendtime: self.nowTime(),
                             });
                         });
+
+                        socket.emit('public message', mesContent);
+
                     }
                 });
-            });
-            socket.on('connect', function() {
-                var mesContent = {
-                    title: self.message.title,
-                    desc: self.message.description.substring(0, 10)
-                }
-                socket.emit('public message', mesContent);
             });
             setTimeout(function(){
                 self.message.title = "";
