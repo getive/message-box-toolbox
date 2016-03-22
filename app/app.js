@@ -47,7 +47,7 @@ var vm = new Vue({
                                 user_id: doc[0].userid,
                                 user_brc: "",
                                 id: docs.length + 1,
-                                typeid: self.selected,
+                                typeid: +self.selected,
                                 title: self.message.title,
                                 author: self.message.author,
                                 desc: self.message.description.substring(0, 50),
@@ -56,7 +56,7 @@ var vm = new Vue({
                             });
                             messages.save({
                                 id: docs.length + 1,
-                                typeid: self.selected,
+                                typeid: +self.selected,
                                 title: self.message.title,
                                 author: self.message.author,
                                 content: self.message.description,
@@ -70,7 +70,7 @@ var vm = new Vue({
                                 type: "public",
                                 user_brc: "",
                                 id: docs.length + 1,
-                                typeid: self.typeid,
+                                typeid: +self.selected,
                                 title: self.message.title,
                                 author: self.message.author,
                                 desc: self.message.description.substring(0, 50),
@@ -79,7 +79,7 @@ var vm = new Vue({
                             });
                             messages.save({
                                 id: docs.length + 1,
-                                typeid: self.typeid,
+                                typeid: +self.selected,
                                 title: self.message.title,
                                 author: self.message.author,
                                 content: self.message.description,
@@ -96,6 +96,13 @@ var vm = new Vue({
                 }
                 socket.emit('public message', mesContent);
             });
+            setTimeout(function(){
+                self.message.title = "";
+                self.message.author = "";
+                self.message.username = "";
+                self.selected = "1";
+                self.message.description = "";
+            },700);
         },
         nowTime: function() {
             return moment().format('YYYY-MM-DD HH:mm:ss');
