@@ -68,6 +68,12 @@ var vm = new Vue({
                                 content: self.message.description,
                                 sendtime: self.nowTime(),
                             });
+                            socket.emit('private message', {
+                                username:self.message.username,
+                                title: self.message.title,
+                                desc: self.message.description.substring(0, 10)
+                            });
+
                         });
 
                         socket.emit('private message', mesContent);
@@ -94,6 +100,11 @@ var vm = new Vue({
                                 content: self.message.description,
                                 sendtime: self.nowTime(),
                             });
+                            socket.emit('public message', {
+                                title: self.message.title,
+                                desc: self.message.description.substring(0, 10)
+                            });
+
                         });
 
                         socket.emit('public message', mesContent);
