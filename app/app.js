@@ -38,22 +38,25 @@ var vm = new Vue({
                 var users = db.collection('mb_user');
                 var summaries = db.collection('mb_summaries');
                 var messages = db.collection('mb_messages');
-
+                var types = db.collection('mb_message_types');
                 var mesContent = {
                     username: self.message.username,
                     title: self.message.title,
-                    desc: self.message.description.substring(0, 10)
+                    desc: self.message.description.substring(0, 10),
+                    typeid: +self.selected
                 }
                 if(self.message.title != "" && self.message.author != "" && self.message.description != ""){
                   users.find({ username: self.message.username }).toArray(function(err, doc) {
                       if (doc.length > 0) { //private信息
                           summaries.find({}).toArray(function(err, docs) {
+
                             var docsNum = docs.length-1;
+                            var idNum = docsNum < 0 ? 1 : docs[docsNum].id+1; //判断是否有数据
                               summaries.save({
                                   type: "private",
                                   user_id: doc[0].userid,
                                   user_brc: "",
-                                  id: docs[docsNum].id + 1,
+                                  id: idNum,
                                   typeid: +self.selected,
                                   title: self.message.title,
                                   author: self.message.author,
@@ -62,26 +65,37 @@ var vm = new Vue({
                                   read: false
                               });
                               messages.save({
-                                  id: docs[docsNum].id + 1,
+                                  id: idNum,
                                   typeid: +self.selected,
                                   title: self.message.title,
                                   author: self.message.author,
                                   content: self.message.description,
                                   sendtime: self.nowTime(),
                               });
-
                           });
-
+                          types.find({
+                            id: +self.selected
+                          }).toArray(function(err,docs){
+                            types.update({
+                              id: +self.selected
+                            }, {
+                              $set: {
+                                count: docs[0].count + 1
+                              }
+                            })
+                          });
                           socket.emit('private message', mesContent);
 
                       } else { //public信息
                           summaries.find({}).toArray(function(err, docs) {
+
                             var docsNum = docs.length-1;
+                            var idNum = docsNum < 0 ? 1 : docs[docsNum].id+1; //判断是否有数据
                               summaries.save({
                                   user_id: "",
                                   type: "public",
                                   user_brc: "",
-                                  id: docs[docsNum].id + 1,
+                                  id: idNum,
                                   typeid: +self.selected,
                                   title: self.message.title,
                                   author: self.message.author,
@@ -90,7 +104,7 @@ var vm = new Vue({
                                   read: false
                               });
                               messages.save({
-                                  id: docs[docsNum].id + 1,
+                                  id: idNum,
                                   typeid: +self.selected,
                                   title: self.message.title,
                                   author: self.message.author,
@@ -98,6 +112,18 @@ var vm = new Vue({
                                   sendtime: self.nowTime(),
                               });
                           });
+                          types.find({
+                            id: +self.selected
+                          }).toArray(function(err,docs){
+                            types.update({
+                              id: +self.selected
+                            }, {
+                              $set: {
+                                count: docs[0].count + 1
+                              }
+                            })
+                          });
+
 
                           socket.emit('public message', mesContent);
 
