@@ -44,73 +44,69 @@ var vm = new Vue({
                     title: self.message.title,
                     desc: self.message.description.substring(0, 10)
                 }
+                if(self.message.title != "" && self.message.author != "" && self.message.description != ""){
+                  users.find({ username: self.message.username }).toArray(function(err, doc) {
+                      if (doc.length > 0) { //private信息
+                          summaries.find({}).toArray(function(err, docs) {
+                            var docsNum = docs.length-1;
+                              summaries.save({
+                                  type: "private",
+                                  user_id: doc[0].userid,
+                                  user_brc: "",
+                                  id: docs[docsNum].id + 1,
+                                  typeid: +self.selected,
+                                  title: self.message.title,
+                                  author: self.message.author,
+                                  desc: self.message.description.substring(0, 50),
+                                  sendtime: self.nowTime(),
+                                  read: false
+                              });
+                              messages.save({
+                                  id: docs[docsNum].id + 1,
+                                  typeid: +self.selected,
+                                  title: self.message.title,
+                                  author: self.message.author,
+                                  content: self.message.description,
+                                  sendtime: self.nowTime(),
+                              });
 
-                users.find({ username: self.message.username }).toArray(function(err, doc) {
-                    if (doc.length > 0) { //private信息
-                        summaries.find({}).toArray(function(err, docs) {
-                            summaries.save({
-                                type: "private",
-                                user_id: doc[0].userid,
-                                user_brc: "",
-                                id: docs.length + 1,
-                                typeid: +self.selected,
-                                title: self.message.title,
-                                author: self.message.author,
-                                desc: self.message.description.substring(0, 50),
-                                sendtime: self.nowTime(),
-                                read: false
-                            });
-                            messages.save({
-                                id: docs.length + 1,
-                                typeid: +self.selected,
-                                title: self.message.title,
-                                author: self.message.author,
-                                content: self.message.description,
-                                sendtime: self.nowTime(),
-                            });
-                            socket.emit('private message', {
-                                username:self.message.username,
-                                title: self.message.title,
-                                desc: self.message.description.substring(0, 10)
-                            });
+                          });
 
-                        });
+                          socket.emit('private message', mesContent);
 
-                        socket.emit('private message', mesContent);
+                      } else { //public信息
+                          summaries.find({}).toArray(function(err, docs) {
+                            var docsNum = docs.length-1;
+                              summaries.save({
+                                  user_id: "",
+                                  type: "public",
+                                  user_brc: "",
+                                  id: docs[docsNum].id + 1,
+                                  typeid: +self.selected,
+                                  title: self.message.title,
+                                  author: self.message.author,
+                                  desc: self.message.description.substring(0, 50),
+                                  sendtime: self.nowTime(),
+                                  read: false
+                              });
+                              messages.save({
+                                  id: docs[docsNum].id + 1,
+                                  typeid: +self.selected,
+                                  title: self.message.title,
+                                  author: self.message.author,
+                                  content: self.message.description,
+                                  sendtime: self.nowTime(),
+                              });
+                          });
 
-                    } else { //public信息
-                        summaries.find({}).toArray(function(err, docs) {
-                            summaries.save({
-                                user_id: "",
-                                type: "public",
-                                user_brc: "",
-                                id: docs.length + 1,
-                                typeid: +self.selected,
-                                title: self.message.title,
-                                author: self.message.author,
-                                desc: self.message.description.substring(0, 50),
-                                sendtime: self.nowTime(),
-                                read: false
-                            });
-                            messages.save({
-                                id: docs.length + 1,
-                                typeid: +self.selected,
-                                title: self.message.title,
-                                author: self.message.author,
-                                content: self.message.description,
-                                sendtime: self.nowTime(),
-                            });
-                            socket.emit('public message', {
-                                title: self.message.title,
-                                desc: self.message.description.substring(0, 10)
-                            });
+                          socket.emit('public message', mesContent);
 
-                        });
+                      }
+                  });
+                }else {
+                  alert("标题、作者、内容 不能为空！")
+                }
 
-                        socket.emit('public message', mesContent);
-
-                    }
-                });
             });
             setTimeout(function(){
                 self.message.title = "";
