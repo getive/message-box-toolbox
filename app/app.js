@@ -45,105 +45,114 @@ var vm = new Vue({
                     desc: self.message.description.substring(0, 10),
                     typeid: +self.selected
                 }
-                if(self.message.title != "" && self.message.author != "" && self.message.description != ""){
-                  users.find({ username: self.message.username }).toArray(function(err, doc) {
-                      if (doc.length > 0) { //private信息
-                          summaries.find({}).toArray(function(err, docs) {
+                if (self.message.title != "" && self.message.author != "" && self.message.description != "") {
+                    users.find({ username: self.message.username }).toArray(function(err, doc) {
+                        var typeid = +self.selected;
+                        var username = self.message.username;
+                        if (doc.length > 0) { //private信息
+                            summaries.find({}).toArray(function(err, docs) {
 
-                            var docsNum = docs.length-1;
-                            var idNum = docsNum < 0 ? 1 : docs[docsNum].id+1; //判断是否有数据
-                              summaries.save({
-                                  type: "private",
-                                  user_id: doc[0].userid,
-                                  user_brc: "",
-                                  id: idNum,
-                                  typeid: +self.selected,
-                                  title: self.message.title,
-                                  author: self.message.author,
-                                  desc: self.message.description.substring(0, 50),
-                                  sendtime: self.nowTime(),
-                                  read: false
-                              });
-                              messages.save({
-                                  id: idNum,
-                                  typeid: +self.selected,
-                                  title: self.message.title,
-                                  author: self.message.author,
-                                  content: self.message.description,
-                                  sendtime: self.nowTime(),
-                              });
-                          });
-                          types.find({
-                            id: +self.selected
-                          }).toArray(function(err,docs){
-                            types.update({
-                              id: +self.selected
-                            }, {
-                              $set: {
-                                count: docs[0].count + 1
-                              }
-                            })
-                          });
-                          socket.emit('private message', mesContent);
+                                var docsNum = docs.length - 1;
+                                var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
+                                summaries.save({
+                                    type: "private",
+                                    user_id: doc[0].userid,
+                                    user_brc: "",
+                                    id: idNum,
+                                    typeid: +self.selected,
+                                    title: self.message.title,
+                                    author: self.message.author,
+                                    desc: self.message.description.substring(0, 50),
+                                    sendtime: self.nowTime(),
+                                    read: false
+                                });
+                                messages.save({
+                                    id: idNum,
+                                    typeid: +self.selected,
+                                    title: self.message.title,
+                                    author: self.message.author,
+                                    content: self.message.description,
+                                    sendtime: self.nowTime(),
+                                });
+                            });
+                            self.privateUnreadCount(typeid, username);
+                            socket.emit('private message', mesContent);
 
-                      } else { //public信息
-                          summaries.find({}).toArray(function(err, docs) {
+                        } else { //public信息
+                            summaries.find({}).toArray(function(err, docs) {
 
-                            var docsNum = docs.length-1;
-                            var idNum = docsNum < 0 ? 1 : docs[docsNum].id+1; //判断是否有数据
-                              summaries.save({
-                                  user_id: "",
-                                  type: "public",
-                                  user_brc: "",
-                                  id: idNum,
-                                  typeid: +self.selected,
-                                  title: self.message.title,
-                                  author: self.message.author,
-                                  desc: self.message.description.substring(0, 50),
-                                  sendtime: self.nowTime(),
-                                  read: false
-                              });
-                              messages.save({
-                                  id: idNum,
-                                  typeid: +self.selected,
-                                  title: self.message.title,
-                                  author: self.message.author,
-                                  content: self.message.description,
-                                  sendtime: self.nowTime(),
-                              });
-                          });
-                          types.find({
-                            id: +self.selected
-                          }).toArray(function(err,docs){
-                            types.update({
-                              id: +self.selected
-                            }, {
-                              $set: {
-                                count: docs[0].count + 1
-                              }
-                            })
-                          });
-
-
-                          socket.emit('public message', mesContent);
-
-                      }
-                  });
-                }else {
-                  alert("标题、作者、内容 不能为空！")
+                                var docsNum = docs.length - 1;
+                                var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
+                                summaries.save({
+                                    user_id: "",
+                                    type: "public",
+                                    user_brc: "",
+                                    id: idNum,
+                                    typeid: +self.selected,
+                                    title: self.message.title,
+                                    author: self.message.author,
+                                    desc: self.message.description.substring(0, 50),
+                                    sendtime: self.nowTime(),
+                                    read: false
+                                });
+                                messages.save({
+                                    id: idNum,
+                                    typeid: +self.selected,
+                                    title: self.message.title,
+                                    author: self.message.author,
+                                    content: self.message.description,
+                                    sendtime: self.nowTime(),
+                                });
+                            });
+                            self.publicUnreadCount(typeid);
+                            socket.emit('public message', mesContent);
+                        }
+                    });
+                } else {
+                    alert("标题、作者、内容 不能为空！")
                 }
 
             });
-            setTimeout(function(){
+            setTimeout(function() {
                 self.message.title = "";
                 self.message.author = "";
                 self.message.username = "";
                 self.selected = "1";
                 self.message.description = "";
-            },700);
+            }, 700);
         },
         nowTime: function() {
             return moment().format('YYYY-MM-DD HH:mm:ss');
+        },
+        privateUnreadCount: function(typeid, username) {
+            connect(function(db) {
+                var collection = db.collection('mb_user');
+                collection.find({ username: username }).toArray(function(err, docs) {
+                    collection.update({
+                        username: username
+                    }, {
+                        $set: {
+                            [`count.${typeid-1}`]: docs[0].count[typeid - 1] + 1
+                        }
+                    });
+                });
+            });
+        },
+        publicUnreadCount: function(typeid) {
+            connect(function(db) {
+                var collection = db.collection('mb_user');
+                collection.find({}).toArray(function(err, docs) {
+                    for (var i = 0; i < docs.length; i++) {
+                        collection.update({
+                            username: docs[i].username
+                        }, {
+                            $set: {
+                                [`count.${typeid-1}`]: docs[i].count[typeid - 1] + 1
+                            }
+                        });
+                    }
+                });
+            });
         }
     }
 })
