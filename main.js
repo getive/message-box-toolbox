@@ -7,7 +7,7 @@ var app = electron.app;
 var BrowserWindow = electron.BrowserWindow;
 
 // initiate socket.io server
-var io = require('socket.io').listen(3001);
+// var io = require('socket.io').listen(3000);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -23,18 +23,18 @@ function createWindow () {
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
 
-    io.on('connection', function (socket) {
-        socket.on('login', function (data) {
-            logData(data);
-        })
-        // Send data to client
-        socket.emit('welcome', "server: 欢迎登陆");
-        // wait for the event raised by the client
-        socket.on('new message',function(data) {
-            logData(data);
-            socket.broadcast.emit('message',data);
-        });
-    });
+    // io.on('connection', function (socket) {
+    //     socket.on('login', function (data) {
+    //         logData(data);
+    //     })
+    //     // Send data to client
+    //     socket.emit('welcome', "server: 欢迎登陆");
+    //     // wait for the event raised by the client
+    //     socket.on('new message',function(data) {
+    //         logData(data);
+    //         socket.broadcast.emit('message',data);
+    //     });
+    // });
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
