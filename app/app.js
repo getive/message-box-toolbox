@@ -33,9 +33,7 @@ var vm = new Vue({
             var self = this;
             connect(function(db) {
                 var users = db.collection('mb_user');
-                var summaries = db.collection('mb_summaries');
                 var messages = db.collection('mb_messages');
-                var types = db.collection('mb_message_types');
                 var mesContent = {
                     username: self.message.username,
                     title: self.message.title,
@@ -47,11 +45,10 @@ var vm = new Vue({
                         var typeid = +self.selected;
                         var username = self.message.username;
                         if (doc.length > 0) { //private信息
-                            summaries.find({}).toArray(function(err, docs) {
-
+                            messages.find({}).toArray(function(err, docs) {
                                 var docsNum = docs.length - 1;
                                 var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
-                                summaries.save({
+                                messages.save({
                                     type: "private",
                                     user_id: doc[0].userid,
                                     user_brc: "",
@@ -60,27 +57,19 @@ var vm = new Vue({
                                     title: self.message.title,
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
-                                    sendtime: self.nowTime(),
-                                    read: false
-                                });
-                                messages.save({
-                                    id: idNum,
-                                    typeid: +self.selected,
-                                    title: self.message.title,
-                                    author: self.message.author,
                                     content: self.message.description,
                                     sendtime: self.nowTime(),
+                                    read: false
                                 });
                             });
                             self.privateUnreadCount(typeid, username);
                             socket.emit('private message', mesContent);
 
                         } else { //public信息
-                            summaries.find({}).toArray(function(err, docs) {
-
+                            messages.find({}).toArray(function(err, docs) {
                                 var docsNum = docs.length - 1;
                                 var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
-                                summaries.save({
+                                messages.save({
                                     user_id: "",
                                     type: "public",
                                     user_brc: "",
@@ -89,16 +78,9 @@ var vm = new Vue({
                                     title: self.message.title,
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
-                                    sendtime: self.nowTime(),
-                                    read: false
-                                });
-                                messages.save({
-                                    id: idNum,
-                                    typeid: +self.selected,
-                                    title: self.message.title,
-                                    author: self.message.author,
                                     content: self.message.description,
                                     sendtime: self.nowTime(),
+                                    read: false
                                 });
                             });
                             self.publicUnreadCount(typeid);
