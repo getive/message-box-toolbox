@@ -2,20 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>消息盒子数据生成</title>
+    <title>消息盒子 - 数据生成器</title>
     <!-- CSS -->
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
 	
 </head>
 <body>
-    <div id="app" style="margin-top:7%">
+    <div id="app">
         <!-- navigation bar -->
+        <nav class="navbar navbar-inverse ng-scope" role="navigation">
+            <div class="navbar-header">
+                <a class="navbar-brand" ui-sref="#">数据生成器</a>
+            </div>
+            <!-- 使用指令 v-link 进行导航。 -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a v-link="{ path: '/' }">首页</a>
+                </li>
+                <li>
+                    <a v-link="{ path: '/mesbox' }"><i class="glyphicon glyphicon-plus"></i> 数据新增</a>
+                </li>
+            </ul>
+        </nav>
+
         <!-- main body of our application -->
         <div class="container" id="messages">
             <!-- add an message form -->
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        <h3>数据新增</h3>
+                        <span>数据新增</span>
                     </div>
                     <div class="panel-body">
                         <div class="form-group">
@@ -47,10 +62,7 @@
 
                         <button class="btn btn-primary pull-right" @click="testMessage" >发&emsp;送</button>
                     </div>
-                    <div class="panel-footer">
-                        <!-- 路由外链 -->
-                        <router-view></router-view>
-                    </div>
+                    <router-view></router-view>
                 </div>
             <!-- show the messages -->
         </div>

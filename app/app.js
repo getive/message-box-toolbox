@@ -2,14 +2,12 @@ var Vue = require('vue');
 var VueRouter = require('vue-router');
 var VueResource = require('vue-resource');
 
-var serverURL = 'http://localhost:3000';
+var conf = require('../config/env_development.json');
 var io = require('socket.io-client');
-var socket = io.connect(serverURL, { 'force new connection': true });
-
 var moment = require('moment');
 // 连接mongodb
-var conf = require('../config/env_development.json');
 var connect = require('./mongodb-server/server').connect(conf.test.url, conf.test.options);
+var socket = io.connect(conf.socketServerUrl, { 'force new connection': true });
 
 Vue.use(VueRouter);
 Vue.use(VueResource);
@@ -32,7 +30,6 @@ var vm = new Vue({
     // Methods we want to use in our application are registered here
     methods: {
         testMessage: function() {
-            var socket = io.connect(serverURL, { 'force new connection': true });
             var self = this;
             connect(function(db) {
                 var users = db.collection('mb_user');
