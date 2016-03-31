@@ -20,11 +20,12 @@ var vm = new Vue({
     // for the application
     data: {
         message: {
+            author: '',
+            username: '',
             title: '',
+            selected: '',
             description: '',
-            date: ''
-        },
-        messages: []
+        }
     },
 
     // Methods we want to use in our application are registered here
@@ -38,11 +39,11 @@ var vm = new Vue({
                     username: self.message.username,
                     title: self.message.title,
                     desc: self.message.description.substring(0, 10),
-                    typeid: +self.selected
+                    typeid: +self.message.selected
                 }
                 if (self.message.title != "" && self.message.author != "" && self.message.description != "") {
                     users.find({ username: self.message.username }).toArray(function(err, doc) {
-                        var typeid = +self.selected;
+                        var typeid = +self.message.selected;
                         var username = self.message.username;
                         if (doc.length > 0) { //private信息
                             messages.find({}).toArray(function(err, docs) {
@@ -53,7 +54,7 @@ var vm = new Vue({
                                     user_id: doc[0].userid,
                                     user_brc: "",
                                     id: idNum,
-                                    typeid: +self.selected,
+                                    typeid: +self.message.selected,
                                     title: self.message.title,
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
@@ -74,7 +75,7 @@ var vm = new Vue({
                                     type: "public",
                                     user_brc: "",
                                     id: idNum,
-                                    typeid: +self.selected,
+                                    typeid: +self.message.selected,
                                     title: self.message.title,
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
@@ -96,7 +97,7 @@ var vm = new Vue({
                 self.message.title = "";
                 self.message.author = "";
                 self.message.username = "";
-                self.selected = "1";
+                self.message.selected = "1";
                 self.message.description = "";
             }, 700);
         },
