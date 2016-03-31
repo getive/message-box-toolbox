@@ -1,23 +1,23 @@
 {
-  "name": "message-box-data-generator",
+  "name": "message-box-toolbox",
   "version": "1.0.0",
-  "description": "消息盒子数据生成器，演示用。",
+  "description": "消息盒子 - 运维工具",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "gulp run",
-    "package": "electron-packager ./ app --out MessageBox-DataGenerator --platform=win32 --arch=x64 --version 0.36.7"
+    "package": "electron-packager ./ app --out MessageBox-Toolbox --platform=win32 --arch=x64 --version 0.36.7"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/infohold-works/message-box-data-generator.git"
+    "url": "git+https://github.com/infohold-works/message-box-toolbox.git"
   },
   "author": "infohold-works",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/infohold-works/message-box-data-generator/issues"
+    "url": "https://github.com/infohold-works/message-box-toolbox/issues"
   },
-  "homepage": "https://github.com/infohold-works/message-box-data-generator#readme",
+  "homepage": "https://github.com/infohold-works/message-box-toolbox#readme",
   "devDependencies": {
     "electron-prebuilt": "^0.36.7",
     "gulp": "^3.9.1",
