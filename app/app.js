@@ -39,7 +39,7 @@ var vm = new Vue({
                 var mesContent = {
                     username: self.message.username,
                     title: self.message.title,
-                    desc: self.message.description.substring(0, 10),
+                    desc: self.message.description.substring(0, 35)+"...",
                     typeid: +self.message.selected
                 }
                 if (self.message.title != "" && self.message.author != "" && self.message.description != "") {
