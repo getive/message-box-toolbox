@@ -35,6 +35,7 @@ var vm = new Vue({
             connect(function(db) {
                 var users = db.collection('mb_user');
                 var messages = db.collection('mb_messages');
+                var status = db.collection('mb_status');
                 var mesContent = {
                     username: self.message.username,
                     title: self.message.title,
@@ -59,11 +60,18 @@ var vm = new Vue({
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
                                     content: self.message.description,
-                                    sendtime: self.nowTime(),
-                                    read: false
+                                    sendtime: self.nowTime()
+                                });
+                                status.update({
+                                    userid: doc[0].userid,
+                                    typeid: typeid
+                                }, {
+                                    $push: {
+                                        "message": { "id": idNum, "read": false }
+                                    }
                                 });
                             });
-                            self.privateUnreadCount(typeid, username);
+                            self.privateUnreadCount(typeid, username);  //修改私有消息未读数
                             socket.emit('private message', mesContent);
 
                         } else { //public信息
@@ -80,11 +88,22 @@ var vm = new Vue({
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
                                     content: self.message.description,
-                                    sendtime: self.nowTime(),
-                                    read: false
+                                    sendtime: self.nowTime()
+                                });
+                                users.find({}).toArray(function(err, d) {
+                                    for (var i = 0; i < d.length; i++) {
+                                        status.update({
+                                            userid: d[i].userid,
+                                            typeid: typeid
+                                        }, {
+                                            $push: {
+                                                "message": { "id": idNum, "read": false }
+                                            }
+                                        });
+                                    }
                                 });
                             });
-                            self.publicUnreadCount(typeid);
+                            self.publicUnreadCount(typeid);  //修改公有消息未读数
                             socket.emit('public message', mesContent);
                         }
                     });
@@ -107,13 +126,14 @@ var vm = new Vue({
         privateUnreadCount: function(typeid, username) {
             connect(function(db) {
                 var collection = db.collection('mb_user');
+                var status = db.collection('mb_status');
                 collection.find({ username: username }).toArray(function(err, docs) {
-                    collection.update({
-                        username: username
-                    }, {
-                        $set: {
-                            [`count.${typeid-1}`]: docs[0].count[typeid - 1] + 1
-                        }
+                    status.find({ userid: docs[0].userid, typeid: typeid }).toArray(function(err, doc) {
+                        status.update({ userid: docs[0].userid, typeid: typeid }, {
+                            $set: {
+                                "count": doc[0].count + 1
+                            }
+                        });
                     });
                 });
             });
@@ -121,14 +141,21 @@ var vm = new Vue({
         publicUnreadCount: function(typeid) {
             connect(function(db) {
                 var collection = db.collection('mb_user');
+                var status = db.collection('mb_status');
                 collection.find({}).toArray(function(err, docs) {
                     for (var i = 0; i < docs.length; i++) {
-                        collection.update({
-                            username: docs[i].username
-                        }, {
-                            $set: {
-                                [`count.${typeid-1}`]: docs[i].count[typeid - 1] + 1
-                            }
+                        status.find({
+                            userid: docs[i].userid,
+                            typeid: typeid
+                        }).toArray(function(err, doc) {
+                            status.update({
+                                userid: doc[0].userid,
+                                typeid: typeid
+                            }, {
+                                $set: {
+                                    "count": doc[0].count + 1
+                                }
+                            })
                         });
                     }
                 });
