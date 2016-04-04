@@ -51,11 +51,11 @@ var vm = new Vue({
                                 var docsNum = docs.length - 1;
                                 var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
                                 messages.save({
-                                    type: "private",
-                                    user_id: doc[0].userid,
-                                    user_brc: "",
                                     id: idNum,
+                                    userid: doc[0].userid,
+                                    userbrc: "",
                                     typeid: +self.message.selected,
+                                    type: "private",
                                     title: self.message.title,
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
@@ -79,11 +79,11 @@ var vm = new Vue({
                                 var docsNum = docs.length - 1;
                                 var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
                                 messages.save({
-                                    user_id: "",
-                                    type: "public",
-                                    user_brc: "",
                                     id: idNum,
+                                    userid: "",
+                                    userbrc: "",
                                     typeid: +self.message.selected,
+                                    type: "public",
                                     title: self.message.title,
                                     author: self.message.author,
                                     desc: self.message.description.substring(0, 50),
