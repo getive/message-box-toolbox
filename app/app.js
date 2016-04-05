@@ -155,7 +155,7 @@ var vm = new Vue({
         publicUnreadCount: function(typeid) {
             connect(function(db) {
                 var collection = db.collection('mb_user');
-                var summary = db.collection('mb_status');
+                var summary = db.collection('mb_summary');
                 collection.find({}).toArray(function(err, docs) {
                     for (var i = 0; i < docs.length; i++) {
                         summary.find({
