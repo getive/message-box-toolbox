@@ -33,24 +33,26 @@ var vm = new Vue({
         testMessage: function() {
             var self = this;
             connect(function(db) {
-                var users = db.collection('mb_user');
-                var messages = db.collection('mb_messages');
-                var status = db.collection('mb_status');
+                var user = db.collection('mb_user');
+                var message = db.collection('mb_message');
+                var summary = db.collection('mb_summary');
                 var mesContent = {
                     username: self.message.username,
                     title: self.message.title,
-                    desc: self.message.description.substring(0, 35)+"...",
+                    desc: self.message.description.length > 36 ?
+                          self.message.description.substring(0, 36) + "..." :
+                          self.message.description,
                     typeid: +self.message.selected
                 }
                 if (self.message.title != "" && self.message.author != "" && self.message.description != "") {
-                    users.find({ username: self.message.username }).toArray(function(err, doc) {
+                    user.find({ username: self.message.username }).toArray(function(err, doc) {
                         var typeid = +self.message.selected;
                         var username = self.message.username;
                         if (doc.length > 0) { //private信息
-                            messages.find({}).toArray(function(err, docs) {
+                            message.find({}).toArray(function(err, docs) {
                                 var docsNum = docs.length - 1;
                                 var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
-                                messages.save({
+                                message.save({
                                     id: idNum,
                                     userid: doc[0].userid,
                                     userbrc: "",
@@ -58,16 +60,22 @@ var vm = new Vue({
                                     type: "private",
                                     title: self.message.title,
                                     author: self.message.author,
-                                    desc: self.message.description.substring(0, 50),
+                                    desc: self.message.description.substring(0, 48),
                                     content: self.message.description,
                                     sendtime: self.nowTime()
                                 });
-                                status.update({
+                                summary.update({
                                     userid: doc[0].userid,
                                     typeid: typeid
                                 }, {
                                     $push: {
-                                        "message": { "id": idNum, "read": false }
+                                        "message": {
+                                            "id": idNum,
+                                            "title": self.message.title,
+                                            "desc": self.message.description.substring(0, 48),
+                                            "sendtime": self.nowTime(),
+                                            "read": false
+                                        }
                                     }
                                 });
                             });
@@ -75,10 +83,10 @@ var vm = new Vue({
                             socket.emit('private message', mesContent);
 
                         } else { //public信息
-                            messages.find({}).toArray(function(err, docs) {
+                            message.find({}).toArray(function(err, docs) {
                                 var docsNum = docs.length - 1;
                                 var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; //判断是否有数据
-                                messages.save({
+                                message.save({
                                     id: idNum,
                                     userid: "",
                                     userbrc: "",
@@ -86,18 +94,24 @@ var vm = new Vue({
                                     type: "public",
                                     title: self.message.title,
                                     author: self.message.author,
-                                    desc: self.message.description.substring(0, 50),
+                                    desc: self.message.description.substring(0, 48),
                                     content: self.message.description,
                                     sendtime: self.nowTime()
                                 });
-                                users.find({}).toArray(function(err, d) {
+                                user.find({}).toArray(function(err, d) {
                                     for (var i = 0; i < d.length; i++) {
-                                        status.update({
+                                        summary.update({
                                             userid: d[i].userid,
                                             typeid: typeid
                                         }, {
                                             $push: {
-                                                "message": { "id": idNum, "read": false }
+                                                "message": {
+                                                    "id": idNum,
+                                                    "title": self.message.title,
+                                                    "desc": self.message.description.substring(0, 48),
+                                                    "sendtime": self.nowTime(),
+                                                    "read": false
+                                                }
                                             }
                                         });
                                     }
@@ -126,10 +140,10 @@ var vm = new Vue({
         privateUnreadCount: function(typeid, username) {
             connect(function(db) {
                 var collection = db.collection('mb_user');
-                var status = db.collection('mb_status');
+                var summary = db.collection('mb_summary');
                 collection.find({ username: username }).toArray(function(err, docs) {
-                    status.find({ userid: docs[0].userid, typeid: typeid }).toArray(function(err, doc) {
-                        status.update({ userid: docs[0].userid, typeid: typeid }, {
+                    summary.find({ userid: docs[0].userid, typeid: typeid }).toArray(function(err, doc) {
+                        summary.update({ userid: docs[0].userid, typeid: typeid }, {
                             $set: {
                                 "count": doc[0].count + 1
                             }
@@ -141,14 +155,14 @@ var vm = new Vue({
         publicUnreadCount: function(typeid) {
             connect(function(db) {
                 var collection = db.collection('mb_user');
-                var status = db.collection('mb_status');
+                var summary = db.collection('mb_status');
                 collection.find({}).toArray(function(err, docs) {
                     for (var i = 0; i < docs.length; i++) {
-                        status.find({
+                        summary.find({
                             userid: docs[i].userid,
                             typeid: typeid
                         }).toArray(function(err, doc) {
-                            status.update({
+                            summary.update({
                                 userid: doc[0].userid,
                                 typeid: typeid
                             }, {
