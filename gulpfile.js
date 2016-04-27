@@ -1,11 +1,4 @@
-// 引入
-var gulp = require('gulp'),
-    childProcess = require('child_process'),
-    electron = require('electron-prebuilt');
+'use strict';
 
-// 创建任务
-gulp.task('run', function() {
-    childProcess.spawn(electron, ['./'], {
-        stdio: 'inherit'
-    });
-});
+require('./tasks/build');
+require('./tasks/release');
