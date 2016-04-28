@@ -3,7 +3,7 @@ var conf = require('../../config/env_development.json');
 var io = require('socket.io-client');
 var moment = require('moment');
 // 连接mongodb
-var connect = require('../utils/db').connect(conf.test.url, conf.test.options);
+var connect = require('../utils/db').connect(conf.db.url, conf.db.options);
 var socket = io.connect(conf.socketServerUrl, { 'force new connection': true });
 
 module.exports = {
@@ -182,7 +182,6 @@ module.exports = {
 }
 </script>
 <template>
-    <!-- main body of our application -->
     <div class="content" id="messages">
         <!-- add an message form -->
         <div class="panel panel-info">
@@ -226,6 +225,8 @@ module.exports = {
             </div>
         </div>
     </div>
+
+    <!-- main body of our application -->
 </template>
 <style media="screen">
     .content {

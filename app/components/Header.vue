@@ -15,10 +15,10 @@
               <a v-link="{ path: '/' }">首页</a>
           </li>
           <li>
-              <a v-link="{ path: '/main' }"><i class="glyphicon glyphicon-send"></i> 消息发布</a>
+              <a v-link="{ path: '/main' }"><i class="glyphicon glyphicon-plus"></i> 数据新增</a>
           </li>
           <li>
-              <a v-link="{ path: '/statistics' }"><i class="glyphicon glyphicon-send"></i> 统计页面</a>
+              <a v-link="{ path: '/statistics' }"><i class="glyphicon glyphicon-pencil"></i> 数据统计</a>
           </li>
       </ul>
   </nav>

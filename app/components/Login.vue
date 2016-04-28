@@ -3,7 +3,7 @@
     var env_conf = require('../../config/env_development.json');
     var socket = require('socket.io-client')(env_conf.socketServerUrl);
     var moment = require('moment');
-    var connect = require('../utils/db').connect(env_conf.test.url, env_conf.test.options);
+    var connect = require('../utils/db').connect(env_conf.db.url, env_conf.db.options);
     //引用vue-spinner插件
     var ScaleLoader = require('vue-spinner/src/ScaleLoader.vue');
     // var ipcRenderer = require('electron').ipcRenderer;
@@ -255,10 +255,10 @@
         </div>
     </div>
 </template>
-<style>
-    body {
+<!-- <style>
+    /*body {
         background: #1ABC9C;
-    }
+    }*/
 
     .login-screen {
         padding: 0;
@@ -315,4 +315,4 @@
         margin-top: -30px;
         margin-left: -35px;
     }
-</style>
+</style> -->
