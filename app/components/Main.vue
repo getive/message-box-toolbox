@@ -184,7 +184,7 @@ module.exports = {
 <template>
     <div class="content" id="messages">
         <!-- add an message form -->
-        <div class="panel panel-info">
+        <div class="panel panel-success">
             <div class="panel-heading">
                 <span>消息发布</span>
             </div>

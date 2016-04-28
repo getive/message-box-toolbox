@@ -32,7 +32,7 @@
                                 </ul>
                             </div>
                             <div class="col-md-9 col-sm-9 message">
-                                <h4>消息读取状态</h4>
+                                <h6>消息读取状态</h6>
                                 <hr>
                                 <div class="row msg">
                                     <div class="col-md-6 col-sm-6">
@@ -103,5 +103,8 @@
     }
     .search {
         margin-left: 20px;
+    }
+    input {
+        border-width: 1px;
     }
 </style>
