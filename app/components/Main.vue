@@ -186,16 +186,16 @@ module.exports = {
         <!-- add an message form -->
         <div class="panel panel-success">
             <div class="panel-heading">
-                <span>消息发布</span>
+                <span>数据新增</span>
             </div>
             <div class="panel-body">
 
                 <div class="form-inline form-user">
-                    <div class="form-group pull-left">
+                    <div class="form-group">
                         <input class="form-control" placeholder="发送方" v-model="message.author">
                     </div>
 
-                    <div class="form-group pull-right">
+                    <div class="form-group form-username">
                         <input class="form-control" placeholder="接收方" v-model="message.username">
                     </div>
                 </div>
@@ -228,7 +228,7 @@ module.exports = {
 
     <!-- main body of our application -->
 </template>
-<style media="screen">
+<style>
     .content {
         padding-right: 15px;
         padding-left: 15px;
@@ -243,5 +243,22 @@ module.exports = {
 
     .form-user .form-group .form-control {
         width: 100%;
+    }
+    .form-username {
+        margin-left: 12px;
+    }
+    .panel-success {
+        border-color: #1ABC9C;
+    }
+    .panel-success>.panel-heading {
+        color:#fff;
+        background-color: #1ABC9C;
+        border-color:#1ABC9C;
+    }
+    .md-editor.active {
+        border-color: #1abc9c;
+    }
+    .form-control, .select2-search input[type=text] {
+        border:1px solid #bdc3c7;
     }
 </style>
