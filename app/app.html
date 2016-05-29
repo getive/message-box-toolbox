@@ -2,102 +2,21 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>消息盒子 - 运维工具</title>
-    <!-- CSS -->
-    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/bootstrap-markdown.min.css">
-    <style media="screen">
-        .content {
-            padding-right: 15px;
-            padding-left: 15px;
-            margin-right: auto;
-            margin-left: auto;
-        }
-
-        .form-user .form-group {
-            margin-bottom: 15px;
-            width: 49%
-        }
-
-        .form-user .form-group .form-control {
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>消息盒子 - 运维工具</title>
+  <!-- CSS -->
+  <link href="./assets/css/plugins.min.css" rel="stylesheet" type="text/css">
+  <link href="./assets/css/animate.min.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="assets/css/bootstrap-markdown.min.css">
+  <link href="./app.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-    <div id="app">
-        <!-- navigation bar -->
-        <nav class="navbar navbar-inverse ng-scope" role="navigation">
-            <div class="navbar-header">
-                <a class="navbar-brand" ui-sref="#">工具盒子</a>
-            </div>
-            <!-- 使用指令 v-link 进行导航。 -->
-            <ul class="nav navbar-nav">
-                <li>
-                    <a v-link="{ path: '/' }">首页</a>
-                </li>
-                <li>
-                    <a v-link="{ path: '/mesbox' }"><i class="glyphicon glyphicon-send"></i> 消息发布</a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- main body of our application -->
-        <div class="content" id="messages">
-            <!-- add an message form -->
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <span>消息发布</span>
-                </div>
-                <div class="panel-body">
-
-                    <div class="form-inline form-user">
-                        <div class="form-group pull-left">
-                            <input class="form-control" placeholder="发送方" v-model="message.author">
-                        </div>
-
-                        <div class="form-group pull-right">
-                            <input class="form-control" placeholder="接收方" v-model="message.username">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <input class="form-control" placeholder="标题" v-model="message.title">
-                    </div>
-
-                    <div class="form-group">
-                        <select class="form-control" v-model="message.selected">
-                            <option value="1" selected>政策信息</option>
-                            <option value="2">业务通知</option>
-                            <option value="3">征集核定</option>
-                            <option value="4">发票领取</option>
-                            <option value="5">缴费通知</option>
-                            <option value="6">催缴通知</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <form>
-                            <textarea name="content" data-provide="markdown" rows="10" v-model="message.description" placeholder="内容" data-hidden-buttons="cmdUrl cmdImage"></textarea>
-                        </form>
-                    </div>
-
-                    <button class="btn btn-primary pull-right" @click="testMessage"><i class="glyphicon glyphicon-send"></i> 发&emsp;布</button>
-                </div>
-                <router-view></router-view>
-            </div>
-            <!-- vue log -->
-            <!-- <pre>
-                {{ $data | json}}
-            </pre> -->
-        </div>
-    </div>
-    <script src="app.js"></script>
-    <!-- js -->
-    <script src="assets/js/markdown/markdown.js"></script>
-    <script src="assets/js/markdown/bootstrap-markdown.js"></script>
+  <div id="app"></div>
+  <script src="app.js"></script>
+  <!-- js -->
+  <script src="./assets/js/plugins.min.js"></script>
+  <script src="assets/js/markdown/bootstrap-markdown.js"></script>
 </body>
 
 </html>
