@@ -16,15 +16,15 @@ var router = new VueRouter()
 // 定义路由规则
 // 创建的组件构造函数，也可以是一个组件选项对象。
 router.map({
-    '/': {
-        component: Main
-    },
-    '/main': {
-        component: Main
-    },
-    '/statistics': {
-        component: Statistics
-    }
+  '/': {
+    component: Main
+  },
+  '/main': {
+    component: Main
+  },
+  '/statistics': {
+    component: Statistics
+  }
 })
-// 路由器会创建一个 App 实例，并且挂载到选择符 #app 匹配的元素上。
+  // 路由器会创建一个 App 实例，并且挂载到选择符 #app 匹配的元素上。
 router.start(App, '#app')
