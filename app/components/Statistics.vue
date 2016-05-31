@@ -15,6 +15,21 @@
 
       }
     },
+
+    vuex: {
+      getters: {
+        User: ({
+          global
+        }) => global.User,
+        Summary: ({
+          global
+        }) => global.Summary,
+        Message: ({
+          global
+        }) => global.Message
+      }
+    },
+
     ready: function() {
       var self = this;
       // 查询在线人数

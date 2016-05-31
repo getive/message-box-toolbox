@@ -1,9 +1,6 @@
 <script>
   var conf = require('../../config/env_development.json');
   var io = require('socket.io-client');
-  var moment = require('moment');
-  // 连接mongodb
-  var connect = require('../utils/db').connect(conf.db.url, conf.db.options);
   var socket = io.connect(conf.socketServerUrl, {
     'force new connection': true
   });
@@ -18,165 +15,167 @@
           author: '',
           username: '',
           title: '',
-          selected: '',
+          typeid: '',
           description: ''
         }
       }
     },
 
+    vuex: {
+      getters: {
+        User: ({
+          global
+        }) => global.User,
+        Summary: ({
+          global
+        }) => global.Summary,
+        Message: ({
+          global
+        }) => global.Message
+      }
+    },
+
     // Methods we want to use in our application are registered here
     methods: {
-      testMessage: function() {
+      sendMessage: function() {
         var self = this;
-        connect(function(db) {
-          var user = db.collection('mb_user');
-          var message = db.collection('mb_message');
-          var summary = db.collection('mb_summary');
-          var mesContent = {
-            username: self.message.username,
+        var mesContent = {
+          username: self.message.username,
+          title: self.message.title,
+          desc: self.message.description.length > 36 ? self.message.description.substring(0, 36) + "..." : self.message.description,
+          typeid: +self.message.typeid
+        }
+        this.User.findOne({
+          username: this.message.username
+        }, function(err, user) {
+          var typeid = +self.message.typeid;
+          var newMessage = {
+            id: '',
+            userid: user.userid,
+            userbrc: '',
+            typeid: +self.message.typeid,
+            type: '',
             title: self.message.title,
-            desc: self.message.description.length > 36 ?
-              self.message.description.substring(0, 36) + "..." : self.message.description,
-            typeid: +self.message.selected
+            author: self.message.author,
+            desc: self.message.description.substring(0, 48),
+            content: self.message.description,
+            sendtime: self.getNowFormatDate()
           }
-          if (self.message.title != "" && self.message.author != "" && self.message.description != "") {
-            user.find({
-              username: self.message.username
-            }).toArray(function(err, doc) {
-              var typeid = +self.message.selected;
-              var username = self.message.username;
-              if (doc.length > 0) { // private信息
-                message.find({}).toArray(function(err, docs) {
-                  var docsNum = docs.length - 1;
-                  var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; // 判断是否有数据
-                  message.save({
-                    id: idNum,
-                    userid: doc[0].userid,
-                    userbrc: "",
-                    typeid: +self.message.selected,
-                    type: "private",
-                    title: self.message.title,
-                    author: self.message.author,
-                    desc: self.message.description.substring(0, 48),
-                    content: self.message.description,
-                    sendtime: self.nowTime()
-                  });
-                  summary.update({
-                    userid: doc[0].userid,
-                    typeid: typeid
-                  }, {
-                    $push: {
-                      "message": {
-                        "id": idNum,
-                        "title": self.message.title,
-                        "desc": self.message.description.substring(0, 48),
-                        "sendtime": self.nowTime(),
-                        "read": false
-                      }
-                    }
-                  });
-                });
-                self.privateUnreadCount(typeid, username); // 修改私有消息未读数
-                socket.emit('private message', mesContent);
-              } else { // public信息
-                message.find({}).toArray(function(err, docs) {
-                  var docsNum = docs.length - 1;
-                  var idNum = docsNum < 0 ? 1 : docs[docsNum].id + 1; // 判断是否有数据
-                  message.save({
-                    id: idNum,
-                    userid: "",
-                    userbrc: "",
-                    typeid: +self.message.selected,
-                    type: "public",
-                    title: self.message.title,
-                    author: self.message.author,
-                    desc: self.message.description.substring(0, 48),
-                    content: self.message.description,
-                    sendtime: self.nowTime()
-                  });
-                  user.find({}).toArray(function(err, d) {
-                    for (var i = 0; i < d.length; i++) {
-                      summary.update({
-                        userid: d[i].userid,
-                        typeid: typeid
-                      }, {
-                        $push: {
-                          "message": {
-                            "id": idNum,
-                            "title": self.message.title,
-                            "desc": self.message.description.substring(0, 48),
-                            "sendtime": self.nowTime(),
-                            "read": false
-                          }
-                        }
-                      });
-                    }
-                  });
-                });
-                self.publicUnreadCount(typeid); // 修改公有消息未读数
-                socket.emit('public message', mesContent);
+          console.log(user);
+          console.dir(newMessage);
+          if (user.length > 0) { // private 消息
+            var query = {
+              userid: user.userid,
+              typeid: typeid
+            };
+            var doc = {
+              $set: {
+                count: user.count + 1
               }
-            });
+            }
+            var push = {
+              $push: {
+                message: {
+                  id: 0,
+                  title: self.message.title,
+                  desc: self.message.description.substring(0, 48),
+                  sendtime: self.getNowFormatDate(),
+                  read: false
+                }
+              }
+            }
+            newMessage.id = 0; // 自增ID
+            newMessage.type = 'private';
+            self.Message.create(newMessage).exec();
+            self.Summary.update(query, doc, push).exec();
+            // self.privateUnreadCount(typeid, username); // 修改私有消息未读数
+            socket.emit('private message', mesContent);
           } else {
-            alert("标题、作者、内容 不能为空！")
+            newMessage.id = 0; // 自增ID
+            newMessage.type = 'public';
+            self.User.find({}, function(err, users) {
+              for (var i in users) {
+                var query = {
+                  userid: users[i].userid,
+                  typeid: typeid
+                };
+                var doc = {
+                  $set: {
+                    count: users[i].count + 1
+                  }
+                }
+                var push = {
+                  $push: {
+                    message: {
+                      id: 0,
+                      title: self.message.title,
+                      desc: self.message.description.substring(0, 48),
+                      sendtime: self.getNowFormatDate(),
+                      read: false
+                    }
+                  }
+                }
+                self.Summary.update(query, doc, push).exec()
+              }
+            })
+            // self.publicUnreadCount(typeid); // 修改公有消息未读数
+            socket.emit('public message', mesContent);
           }
         });
         setTimeout(function() {
           self.message.title = "";
           self.message.author = "";
           self.message.username = "";
-          self.message.selected = "1";
+          self.message.typeid = "1";
           self.message.description = "";
         }, 700);
       },
-      nowTime: function() {
-        return moment().format('YYYY-MM-DD HH:mm:ss');
-      },
       privateUnreadCount: function(typeid, username) {
-        connect(function(db) {
-          var collection = db.collection('mb_user');
-          var summary = db.collection('mb_summary');
-          collection.find({
-            username: username
-          }).toArray(function(err, docs) {
-            summary.find({
-              userid: docs[0].userid,
-              typeid: typeid
-            }).toArray(function(err, doc) {
-              summary.update({
-                userid: docs[0].userid,
-                typeid: typeid
-              }, {
-                $set: {
-                  "count": doc[0].count + 1
-                }
-              });
-            });
-          });
-        });
+        this.User.findOne({
+          username: username
+        }, function(err, docs) {
+          var query = {
+            userid: docs.userid,
+            typeid: typeid
+          };
+          var doc = {
+            $set: {
+              count: docs.count + 1
+            }
+          }
+          this.Summary.update(query, doc).exec()
+        })
       },
       publicUnreadCount: function(typeid) {
-        connect(function(db) {
-          var collection = db.collection('mb_user');
-          var summary = db.collection('mb_summary');
-          collection.find({}).toArray(function(err, docs) {
-            for (var i = 0; i < docs.length; i++) {
-              summary.find({
-                userid: docs[i].userid,
-                typeid: typeid
-              }).toArray(function(err, doc) {
-                summary.update({
-                  userid: doc[0].userid,
-                  typeid: typeid
-                }, {
-                  $set: {
-                    "count": doc[0].count + 1
-                  }
-                })
-              });
+        this.User.find({}, function(err, docs) {
+          for (var i in docs) {
+            var query = {
+              userid: docs[i].userid,
+              typeid: typeid
+            };
+            var doc = {
+              $set: {
+                count: docs[i].count + 1
+              }
             }
-          });
-        });
+            this.Summary.update(query, doc).exec()
+          }
+        })
+      },
+      getNowFormatDate: function() {
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        function format(arg) {
+          var reg = /^\d{1}$/;
+          return reg.test(arg) ? ("0" + arg) : arg;
+        }
+        return year + "-" + format(month) + "-" + format(day) + " " + format(hours) + ":" + format(minutes) + ":" + format(seconds);
       }
     }
   }
@@ -205,7 +204,7 @@
         </div>
 
         <div class="form-group">
-          <select class="form-control" v-model="message.selected">
+          <select class="form-control" v-model="message.typeid">
             <option value="1" selected>政策信息</option>
             <option value="2">业务通知</option>
             <option value="3">征集核定</option>
@@ -221,7 +220,7 @@
           </form>
         </div>
 
-        <button class="btn btn-primary pull-right" @click="testMessage"><i class="glyphicon glyphicon-send"></i> 发&emsp;布</button>
+        <button class="btn btn-primary pull-right" @click="sendMessage"><i class="glyphicon glyphicon-send"></i> 发&emsp;布</button>
       </div>
     </div>
   </div>

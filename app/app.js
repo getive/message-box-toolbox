@@ -1,30 +1,28 @@
 var Vue = require('vue');
 var VueRouter = require('vue-router');
-var VueResource = require('vue-resource');
+var ConfigRouter = require('./router');
+var store = require('./vuex/store');
 
 // 路由器需要一个根组件。
 var App = require('./App.vue')
-var Main = require('./components/Main.vue')
-var Statistics = require('./components/Statistics.vue')
+
+Vue.config.debug = true
 
 Vue.use(VueRouter);
-Vue.use(VueResource);
 
 // 创建一个路由器实例
 var router = new VueRouter()
+ConfigRouter(router)
 
-// 定义路由规则
-// 创建的组件构造函数，也可以是一个组件选项对象。
-router.map({
-  '/': {
-    component: Main
-  },
-  '/main': {
-    component: Main
-  },
-  '/statistics': {
-    component: Statistics
-  }
+// For every new route scroll to the top of the page
+router.beforeEach(function() {
+  window.scrollTo(0, 0)
 })
-  // 路由器会创建一个 App 实例，并且挂载到选择符 #app 匹配的元素上。
-router.start(App, '#app')
+
+// If no route is matched redirect home
+router.redirect({
+  '*': '/'
+})
+
+// 路由器会创建一个 App 实例，并且挂载到选择符 #app 匹配的元素上。
+router.start(App, '#root')

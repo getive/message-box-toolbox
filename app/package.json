@@ -22,11 +22,8 @@
     "font-awesome": "^4.5.0",
     "jquery": "^2.2.1",
     "marked": "^0.3.5",
-    "moment": "^2.12.0",
-    "mongodb": "^2.1.7",
     "socket.io-client": "^1.4.5",
     "vue": "^1.0.16",
-    "vue-resource": "^0.7.0",
     "vue-router": "^0.7.11",
     "vue-spinner": "^1.0.2"
   },
@@ -38,10 +35,12 @@
     "css-loader": "0.23.0",
     "html-loader": "^0.4.0",
     "json-loader": "^0.5.4",
+    "mongoose": "^4.4.19",
     "style-loader": "^0.13.0",
     "vue-hot-reload-api": "1.2.2",
     "vue-html-loader": "1.0.0",
     "vue-loader": "^6.0.0",
+    "vuex": "^0.6.3",
     "webpack": "1.12.9"
   }
 }
