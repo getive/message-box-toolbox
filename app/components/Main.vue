@@ -91,10 +91,11 @@
           });
           socket.emit('private message', mesContent);
         } else { // public消息
+          newMessage.type = 'public';
+          self.Message.create(newMessage);
           this.Summary.find({
             typeid: typeid
           }, function(err, summaries) {
-            self.Summary.create(newMessage);
             for (var i in summaries) {
               var query = {
                 userid: summaries[i].userid,
@@ -116,7 +117,6 @@
                   }
                 }
               };
-              newMessage.type = 'public';
               self.Summary.update(query, doc).exec();
               self.Summary.update(query, push).exec();
             }
