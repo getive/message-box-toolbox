@@ -39,44 +39,44 @@
     methods: {
       sendMessage: function() {
         var self = this;
+        var messageid = new Date().getTime();
         var mesContent = {
-          username: self.message.username,
+          userid: self.message.userid,
           title: self.message.title,
           desc: self.message.description.length > 36 ? self.message.description.substring(0, 36) + "..." : self.message.description,
           typeid: +self.message.typeid
         }
-        this.User.findOne({
-          username: this.message.username
-        }, function(err, user) {
-          var typeid = +self.message.typeid;
-          var newMessage = {
-            id: '',
-            userid: user.userid,
-            userbrc: '',
-            typeid: +self.message.typeid,
-            type: '',
-            title: self.message.title,
-            author: self.message.author,
-            desc: self.message.description.substring(0, 48),
-            content: self.message.description,
-            sendtime: self.getNowFormatDate()
-          }
-          console.log(user);
-          console.dir(newMessage);
-          if (user.length > 0) { // private 消息
+        var typeid = +self.message.typeid;
+        var userid = self.message.userid;
+        var newMessage = {
+          id: messageid,
+          userid: self.message.userid,
+          userbrc: '',
+          typeid: +self.message.typeid,
+          type: '',
+          title: self.message.title,
+          author: self.message.author,
+          desc: self.message.description.substring(0, 48),
+          content: self.message.description,
+          sendtime: self.getNowFormatDate()
+        }
+        if (self.message.userid != "00000000") { // private消息
+          this.Summary.findOne({
+            userid: userid, typeid: typeid
+          }, function(err, summary) {
             var query = {
-              userid: user.userid,
+              userid: userid,
               typeid: typeid
             };
             var doc = {
               $set: {
-                count: user.count + 1
+                count: summary.count + 1
               }
             }
             var push = {
               $push: {
                 message: {
-                  id: 0,
+                  id: messageid,
                   title: self.message.title,
                   desc: self.message.description.substring(0, 48),
                   sendtime: self.getNowFormatDate(),
@@ -84,83 +84,52 @@
                 }
               }
             }
-            newMessage.id = 0; // 自增ID
             newMessage.type = 'private';
-            self.Message.create(newMessage).exec();
-            self.Summary.update(query, doc, push).exec();
-            // self.privateUnreadCount(typeid, username); // 修改私有消息未读数
-            socket.emit('private message', mesContent);
-          } else {
-            newMessage.id = 0; // 自增ID
-            newMessage.type = 'public';
-            self.User.find({}, function(err, users) {
-              for (var i in users) {
-                var query = {
-                  userid: users[i].userid,
-                  typeid: typeid
-                };
-                var doc = {
-                  $set: {
-                    count: users[i].count + 1
+            self.Message.create(newMessage);
+            self.Summary.update(query, doc).exec();
+            self.Summary.update(query, push).exec();
+          });
+          socket.emit('private message', mesContent);
+        } else { // public消息
+          this.Summary.find({
+            typeid: typeid
+          }, function(err, summaries) {
+            self.Summary.create(newMessage);
+            for (var i in summaries) {
+              var query = {
+                userid: summaries[i].userid,
+                typeid: typeid
+              };
+              var doc = {
+                $set: {
+                  count: summaries[i].count + 1
+                }
+              };
+              var push = {
+                $push: {
+                  message: {
+                    id: messageid,
+                    title: self.message.title,
+                    desc: self.message.description.substring(0, 48),
+                    sendtime: self.getNowFormatDate(),
+                    read: false
                   }
                 }
-                var push = {
-                  $push: {
-                    message: {
-                      id: 0,
-                      title: self.message.title,
-                      desc: self.message.description.substring(0, 48),
-                      sendtime: self.getNowFormatDate(),
-                      read: false
-                    }
-                  }
-                }
-                self.Summary.update(query, doc, push).exec()
-              }
-            })
-            // self.publicUnreadCount(typeid); // 修改公有消息未读数
-            socket.emit('public message', mesContent);
-          }
-        });
+              };
+              newMessage.type = 'public';
+              self.Summary.update(query, doc).exec();
+              self.Summary.update(query, push).exec();
+            }
+          });
+          socket.emit('public message', mesContent);
+        }
         setTimeout(function() {
           self.message.title = "";
           self.message.author = "";
-          self.message.username = "";
+          self.message.userid = "00000000";
           self.message.typeid = "1";
           self.message.description = "";
         }, 700);
-      },
-      privateUnreadCount: function(typeid, username) {
-        this.User.findOne({
-          username: username
-        }, function(err, docs) {
-          var query = {
-            userid: docs.userid,
-            typeid: typeid
-          };
-          var doc = {
-            $set: {
-              count: docs.count + 1
-            }
-          }
-          this.Summary.update(query, doc).exec()
-        })
-      },
-      publicUnreadCount: function(typeid) {
-        this.User.find({}, function(err, docs) {
-          for (var i in docs) {
-            var query = {
-              userid: docs[i].userid,
-              typeid: typeid
-            };
-            var doc = {
-              $set: {
-                count: docs[i].count + 1
-              }
-            }
-            this.Summary.update(query, doc).exec()
-          }
-        })
       },
       getNowFormatDate: function() {
         var date = new Date();
@@ -193,24 +162,28 @@
           <div class="form-group">
             <input class="form-control" placeholder="发送方" v-model="message.author">
           </div>
-
           <div class="form-group form-username">
-            <input class="form-control" placeholder="接收方" v-model="message.username">
+            <select class="form-control" v-model="message.userid">
+              <option value="00000000" selected>--请选择接收方--</option>
+              <option value="00000001">接收方1</option>
+              <option value="00000002">接收方2</option>
+              <option value="00000003">接收方3</option>
+              <option value="00000004">接收方4</option>
+            </select>
           </div>
         </div>
-
         <div class="form-group">
           <input class="form-control" placeholder="标题" v-model="message.title">
         </div>
 
         <div class="form-group">
           <select class="form-control" v-model="message.typeid">
-            <option value="1" selected>政策信息</option>
-            <option value="2">业务通知</option>
-            <option value="3">征集核定</option>
-            <option value="4">发票领取</option>
-            <option value="5">缴费通知</option>
-            <option value="6">催缴通知</option>
+            <option value="1" selected>消息类型1</option>
+            <option value="2">消息类型2</option>
+            <option value="3">消息类型3</option>
+            <option value="4">消息类型4</option>
+            <option value="5">消息类型5</option>
+            <option value="6">消息类型6</option>
           </select>
         </div>
 
