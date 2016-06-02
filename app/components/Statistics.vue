@@ -1,9 +1,6 @@
 <script>
-  var $ = require('jquery');
   var env_conf = require('../../config/env_development.json');
   var socket = require('socket.io-client')(env_conf.socketServerUrl);
-  var connect = require('../utils/db').connect(env_conf.db.url, env_conf.db.options);
-  var onlineCount;
 
   module.exports = {
     name: 'Statistics',
@@ -11,8 +8,10 @@
       return {
         onlineUserNames: [],
         count1: [],
-        count2: []
-
+        count2: [],
+        onlineCount: '',
+        allCount: '',
+        clickUsername: ''
       }
     },
 
@@ -33,114 +32,95 @@
     ready: function() {
       var self = this;
       // 查询在线人数
-      connect(function(db) {
-        var userCollection = db.collection('mb_user');
-        userCollection.find({
-          online_stat: true
-        }).toArray(function(err, docs) {
-          for (var i = 0; i < docs.length; i++) {
-            self.onlineUserNames.push({
-              username: docs[i].username,
-              userid: docs[i].userid
-            });
-          }
-          // console.log(self.onlineUserNames[0].username);
-          onlineCount = docs.length;
-          // 在线人数显示
-          $("#onlineCount").html(onlineCount);
-        });
+      this.User.find({
+        online_stat: true
+      }, function(err, users) {
+        self.onlineCount = users.length;
+        for (var i in users) {
+          self.onlineUserNames.push({
+            username: users[i].username,
+            userid: users[i].userid
+          });
+        }
       });
       // 用户登录成功在线人数+1
       socket.on('onlineCountAdd', function(obj) {
-        onlineCount = onlineCount + 1;
-        $("#onlineCount").html(onlineCount);
-        //
-        connect(function(db) {
-          var userCollection = db.collection('mb_user');
-          userCollection.find({
-            username: obj.username
-          }).toArray(function(err, docs) {
-            self.onlineUserNames.push({
-              username: obj.username,
-              userid: docs[0].userid
-            });
+        self.onlineCount = self.onlineCount + 1;
+        // 添加新加入的用户
+        self.User.findOne({
+          username: obj.username
+        }, function(err, user) {
+          self.onlineUserNames.push({
+            username: obj.username,
+            userid: user.userid
           });
         });
       });
       // 用户退出在线人数-1
       socket.on('onlineCountDel', function(obj) {
-        onlineCount = onlineCount - 1;
-        $("#onlineCount").html(onlineCount);
+        self.onlineCount = self.onlineCount - 1;
         for (var i = 0; i < self.onlineUserNames.length; i++) {
           if (self.onlineUserNames[i].username == obj.username) {
             self.onlineUserNames.splice(i, 1);
           }
         }
-        // 清空显示的数据
-        var count1 = self.count1.length;
-        var count2 = self.count2.length;
-        self.count1.splice(0, count1);
-        self.count2.splice(0, count2);
-        $("#username").html("");
-        $("#allCount").html("");
       });
     },
     methods: {
       username(userid, username) {
-        this.count1 = [];
-        this.count2 = [];
         var self = this;
-        connect(function(db) {
-          var summaryCollection = db.collection("mb_summary");
-          summaryCollection.find({
-            userid: userid
-          }).toArray(function(err, docs) {
-            var allCount = 0;
-            var readCount = 0;
-            var unreadCount = 0;
-            for (var i = 0; i < docs.length; i++) {
-              allCount = allCount + docs[i].message.length;
-              unreadCount = unreadCount + docs[i].count;
-              readCount = allCount - unreadCount;
-            }
-            $("#allCount").html(readCount + "/" + allCount);
-          });
+        // 清空显示的数据
+        var count1 = this.count1.length;
+        var count2 = this.count2.length;
+        this.count1.splice(0, count1);
+        this.count2.splice(0, count2);
+        this.allCount = '';
+        this.clickUsername = '';
+
+        this.clickUsername = "用户名：" + username;
+        this.Summary.find({
+          userid: userid
+        }, function(err, summaries) {
+          var allCount = 0;
+          var readCount = 0;
+          var unreadCount = 0;
+          for (var i in summaries) {
+            allCount = allCount + summaries[i].message.length;
+            unreadCount = unreadCount + summaries[i].count;
+            readCount = allCount - unreadCount;
+          }
+          self.allCount = "已读条数：" + readCount + "/" + allCount;
         });
-        connect(function(db) {
-          var summaryCollection = db.collection("mb_summary");
+        //
+        this.Summary.find({
+          userid: userid
+        }).sort({
+          'typeid': 'asc'
+        }).exec(function(err, summaries) {
           var msgTypeAllCount = 0;
           var msgTypeReadCount = 0;
-          summaryCollection.find({
-            userid: userid
-          }).sort({
-            'typeid': 1
-          }).toArray(function(err, docs) {
-            var msgTypesCount = env_conf.messageTypes.length;
-            for (var i = 0; i < msgTypesCount; i++) {
-              msgTypeAllCount = docs[i].message.length;
-              msgTypeReadCount = docs[i].message.length - docs[i].count;
-              if (i < 3) {
-                self.count1.push({
-                  total: msgTypeAllCount,
-                  read: msgTypeReadCount,
-                  title: env_conf.messageTypes[i]
-                });
-              } else {
-                self.count2.push({
-                  total: msgTypeAllCount,
-                  read: msgTypeReadCount,
-                  title: env_conf.messageTypes[i]
-                });
-              }
-
-              msgTypeAllCount = 0;
-              msgTypeReadCount = 0;
+          var msgTypes = env_conf.messageTypes;
+          for (var i in msgTypes) {
+            msgTypeAllCount = summaries[i].message.length;
+            msgTypeReadCount = summaries[i].message.length - summaries[i].count;
+            if (i < 3) {
+              self.count1.push({
+                total: msgTypeAllCount,
+                read: msgTypeReadCount,
+                title: env_conf.messageTypes[i]
+              });
+            } else {
+              self.count2.push({
+                total: msgTypeAllCount,
+                read: msgTypeReadCount,
+                title: env_conf.messageTypes[i]
+              });
             }
-          });
+            msgTypeAllCount = 0;
+            msgTypeReadCount = 0;
+          }
         });
-        $("#username").html(username);
       }
-
     }
   }
 </script>
@@ -158,7 +138,7 @@
             <input type="text" value="" placeholder="搜索" class="form-control input-zd" v-model="searchQuery" />
           </div>
           <div class="form-group online-count" style="display:inline-block;width:130px;">
-            <p>当前在线人数: <span style="color:red" id="onlineCount">0</span></p>
+            <p>当前在线人数: <span style="color:red" id="onlineCount">{{onlineCount}}</span></p>
           </div>
           <div class="form-group">
             <div class="row">
@@ -169,7 +149,6 @@
                       {{onlineUsername.username}}
                     </article>
                   </li>
-
                 </ul>
               </div>
               <div class="col-md-9 col-sm-9 message">
@@ -177,25 +156,25 @@
                 <hr>
                 <div class="row msg">
                   <div class="col-md-6 col-sm-6">
-                    <p>用户名: <span id="username"></span></p>
+                    <p>{{clickUsername}}</p>
                   </div>
                   <div class="col-md-6 col-sm-6">
-                    <p>已读条数: <span id="allCount"></span></p>
+                    <p>{{allCount}}</p>
                   </div>
                 </div>
                 <hr>
                 <div class="row msg">
                   <div class="col-md-6 col-sm-6">
                     <ul class="msg-types">
-                      <li v-for="coun1 in count1" style="list-style-type: none">
-                        {{coun1.title}}：{{coun1.read}}/{{coun1.total}}
+                      <li v-for="c1 in count1" style="list-style-type: none">
+                        {{c1.title}}：{{c1.read}}/{{c1.total}}
                       </li>
                     </ul>
                   </div>
                   <div class="col-md-6 col-sm-6">
                     <ul class="msg-types">
-                      <li v-for="coun2 in count2" style="list-style-type: none">
-                        {{coun2.title}}：{{coun2.read}}/{{coun2.total}}
+                      <li v-for="c2 in count2" style="list-style-type: none">
+                        {{c2.title}}：{{c2.read}}/{{c2.total}}
                       </li>
                     </ul>
                   </div>
@@ -208,7 +187,6 @@
       <!-- show the messages -->
     </div>
   </div>
-
 </template>
 <style>
   .dashboard-list {
