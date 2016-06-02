@@ -11,7 +11,9 @@
         count2: [],
         onlineCount: '',
         allCount: '',
-        clickUsername: ''
+        clickUsername: '',
+        clickName: '',
+        activeUserid: ''
       }
     },
 
@@ -59,6 +61,16 @@
       // 用户退出在线人数-1
       socket.on('onlineCountDel', function(obj) {
         self.onlineCount = self.onlineCount - 1;
+        if (self.clickName == obj.username) { // 如果退出的用户是正在点击的用户,将清空消息读取状态
+          // 清空显示的数据
+          var count1 = self.count1.length;
+          var count2 = self.count2.length;
+          self.count1.splice(0, count1);
+          self.count2.splice(0, count2);
+          self.allCount = '';
+          self.clickUsername = '';
+          self.activeUserid = '';
+        }
         for (var i = 0; i < self.onlineUserNames.length; i++) {
           if (self.onlineUserNames[i].username == obj.username) {
             self.onlineUserNames.splice(i, 1);
@@ -76,8 +88,11 @@
         this.count2.splice(0, count2);
         this.allCount = '';
         this.clickUsername = '';
-
+        this.activeUserid = '';
+        // 修改点击的样式
+        this.activeUserid = userid;
         this.clickUsername = "用户名：" + username;
+        this.clickName = username;
         this.Summary.find({
           userid: userid
         }, function(err, summaries) {
@@ -138,13 +153,15 @@
             <input type="text" value="" placeholder="搜索" class="form-control input-zd" v-model="searchQuery" />
           </div>
           <div class="form-group online-count" style="display:inline-block;width:130px;">
-            <p>当前在线人数: <span style="color:red" id="onlineCount">{{onlineCount}}</span></p>
+            <p>当前在线人数: <span style="color:red" >{{onlineCount}}</span></p>
           </div>
           <div class="form-group">
             <div class="row">
               <div class="col-md-3 col-sm-3">
-                <ul class="dashboard-list" id="onlineName">
-                  <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' " class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)">
+                <ul class="dashboard-list">
+                  <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' "
+                    class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)"
+                    :class="{active:activeUserid == onlineUsername.userid}">
                     <article>
                       {{onlineUsername.username}}
                     </article>
@@ -191,27 +208,27 @@
 <style>
   .dashboard-list {
     overflow: auto;
-    border: 2px solid #1ABC9C;
+    border: 2px solid #ddd;
     border-radius: 5px;
     cursor: pointer;
-    height: 300px;
+    height: 350px;
     width: 193px;
   }
 
   .dashboard-list-item {
     clear: both;
     cursor: pointer;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #eee;
     list-style-type: none;
     font-size: 16px;
     line-height: 25px;
-    color: #21304c;
+    color: #1ABC9C;
     margin-left: -40px;
     padding-left: 15px;
   }
 
   .dashboard-list-item:hover {
-    color: #31708f;
+    color: #1ABC9C;
     background-color: #eee;
   }
 
@@ -224,8 +241,8 @@
   }
 
   .msg-types {
-    line-height: 25px;
-    margin-left: -37px;
+    line-height: 35px;
+    margin-left: -38px;
   }
 
   .online-count {
@@ -236,5 +253,19 @@
   .input-zd {
     width: 193px;
     height: 36px;
+  }
+
+  .active {
+			background-color: #1ABC9C;
+			color: #fff;
+	}
+
+  .active:hover {
+			background-color: #1ABC9C;
+			color: #fff;
+	}
+
+  ul, ol {
+    margin-bottom: 0px;
   }
 </style>
