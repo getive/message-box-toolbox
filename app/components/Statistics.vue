@@ -13,7 +13,8 @@
         allCount: '',
         clickUsername: '',
         clickName: '',
-        activeUserid: ''
+        activeUserid: '',
+        searchQuery: ''
       }
     },
 
@@ -161,7 +162,7 @@
                 <ul class="dashboard-list">
                   <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' "
                     class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)"
-                    :class="{active:activeUserid == onlineUsername.userid}">
+                    :class="{'onlinelist-active': activeUserid == onlineUsername.userid}">
                     <article>
                       {{onlineUsername.username}}
                     </article>
@@ -255,12 +256,12 @@
     height: 36px;
   }
 
-  .active {
+  .onlinelist-active {
 			background-color: #1ABC9C;
 			color: #fff;
 	}
 
-  .active:hover {
+  .onlinelist-active:hover {
 			background-color: #1ABC9C;
 			color: #fff;
 	}
