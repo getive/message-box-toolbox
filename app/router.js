@@ -11,6 +11,9 @@ export default function(router) {
     },
     '/statistics': {
       component: require("./components/Statistics.vue")
+    },
+    '/register': {
+      component: require("./components/Register.vue")
     }
   })
 }

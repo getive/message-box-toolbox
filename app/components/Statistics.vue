@@ -141,7 +141,7 @@
   }
 </script>
 <template id="statistics">
-  <div id="statis">
+  <div>
     <!-- main body of our application -->
     <div class="content">
       <!-- add an message form -->
@@ -154,15 +154,13 @@
             <input type="text" value="" placeholder="搜索" class="form-control input-zd" v-model="searchQuery" />
           </div>
           <div class="form-group online-count" style="display:inline-block;width:130px;">
-            <p>当前在线人数: <span style="color:red" >{{onlineCount}}</span></p>
+            <p>当前在线人数: <span style="color:red">{{onlineCount}}</span></p>
           </div>
           <div class="form-group">
             <div class="row">
               <div class="col-md-3 col-sm-3">
                 <ul class="dashboard-list">
-                  <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' "
-                    class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)"
-                    :class="{'onlinelist-active': activeUserid == onlineUsername.userid}">
+                  <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' " class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)" :class="{'onlinelist-active': activeUserid == onlineUsername.userid}">
                     <article>
                       {{onlineUsername.username}}
                     </article>
@@ -257,16 +255,17 @@
   }
 
   .onlinelist-active {
-			background-color: #1ABC9C;
-			color: #fff;
-	}
+    background-color: #1ABC9C;
+    color: #fff;
+  }
 
   .onlinelist-active:hover {
-			background-color: #1ABC9C;
-			color: #fff;
-	}
+    background-color: #1ABC9C;
+    color: #fff;
+  }
 
-  ul, ol {
+  ul,
+  ol {
     margin-bottom: 0px;
   }
 </style>

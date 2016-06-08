@@ -20,6 +20,9 @@
       <li>
         <a v-link="{ path: '/statistics' }"><i class="glyphicon glyphicon-pencil"></i> 数据统计</a>
       </li>
+      <li>
+        <a v-link="{ path: '/register' }"><i class="fa fa-list-alt"></i> 用户创建</a>
+      </li>
     </ul>
   </nav>
 </template>

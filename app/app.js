@@ -1,5 +1,6 @@
 var Vue = require('vue');
 var VueRouter = require('vue-router');
+var vueForm = require('vue-form')
 var ConfigRouter = require('./router');
 var store = require('./vuex/store');
 
@@ -9,6 +10,7 @@ var App = require('./App.vue')
 Vue.config.debug = true
 
 Vue.use(VueRouter);
+Vue.use(vueForm);
 
 // 创建一个路由器实例
 var router = new VueRouter()
