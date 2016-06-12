@@ -17,7 +17,8 @@
           title: '',
           typeid: '',
           description: ''
-        }
+        },
+        usernames: []
       }
     },
 
@@ -34,7 +35,17 @@
         }) => global.Message
       }
     },
-
+    ready: function() {
+      var self = this;
+      this.User.find({}, function(err, users) {
+        for (var i in users) {
+          self.usernames.push({
+            username: users[i].username,
+            userid: users[i].userid
+          });
+        }
+      });
+    },
     // Methods we want to use in our application are registered here
     methods: {
       sendMessage: function() {
@@ -50,7 +61,7 @@
         var userid = self.message.userid;
         var newMessage = {
           id: messageid,
-          userid: self.message.userid,
+          userid: '',
           userbrc: '',
           typeid: +self.message.typeid,
           type: '',
@@ -62,7 +73,8 @@
         }
         if (self.message.userid != "00000000") { // private消息
           this.Summary.findOne({
-            userid: userid, typeid: typeid
+            userid: userid,
+            typeid: typeid
           }, function(err, summary) {
             var query = {
               userid: userid,
@@ -85,6 +97,7 @@
               }
             }
             newMessage.type = 'private';
+            newMessage.userid = self.message.userid;
             self.Message.create(newMessage);
             self.Summary.update(query, doc).exec();
             self.Summary.update(query, push).exec();
@@ -165,10 +178,9 @@
           <div class="form-group form-username">
             <select class="form-control" v-model="message.userid">
               <option value="00000000" selected>--请选择接收方--</option>
-              <option value="00000001">接收方1</option>
-              <option value="00000002">接收方2</option>
-              <option value="00000003">接收方3</option>
-              <option value="00000004">接收方4</option>
+              <option v-for="user in usernames" v-bind:value="user.userid">
+                {{user.username}}
+              </option>
             </select>
           </div>
         </div>
