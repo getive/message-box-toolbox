@@ -44,7 +44,7 @@
           'id': 'asc'
         }).exec(function(err, users) {
           var newUser = {
-            id: users[users.length - 1].id + 1,
+            id: users.length > 0 ? users[users.length - 1].id + 1 : 1,
             userid: self.userid,
             username: self.username,
             password: self.password,
