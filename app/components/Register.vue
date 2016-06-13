@@ -1,7 +1,4 @@
 <script>
-  // var env_conf = require('../../config/env_development.json');
-  // var socket = require('socket.io-client')(env_conf.socketServerUrl);
-
   module.exports = {
     name: 'Register',
     data: function() {

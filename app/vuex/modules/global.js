@@ -7,15 +7,17 @@ import {
 const state = {
   User: '',
   Summary: '',
-  Message: ''
+  Message: '',
+  Feedback: ''
 }
 
 // mutations
 const mutations = {
-  [SET_MODEL](state, User, Summary, Message) {
+  [SET_MODEL](state, User, Summary, Message, Feedback) {
     state.User = User
     state.Summary = Summary
     state.Message = Message
+    state.Feedback = Feedback
   }
 }
 

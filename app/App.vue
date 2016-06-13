@@ -8,6 +8,7 @@
   import User from './vuex/models/userModel'
   import Summary from './vuex/models/summaryModel'
   import Message from './vuex/models/messageModel'
+  import Feedback from './vuex/models/feedbackModel'
   import { setModel } from './vuex/actions'
 
   module.exports = {
@@ -30,7 +31,7 @@
     },
 
     ready: function() {
-      this.setModel(User, Summary, Message)
+      this.setModel(User, Summary, Message, Feedback)
     },
 
     components: {

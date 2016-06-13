@@ -14,6 +14,9 @@ export default function(router) {
     },
     '/register': {
       component: require("./components/Register.vue")
+    },
+    '/feedback': {
+      component: require("./components/Feedback.vue")
     }
   })
 }

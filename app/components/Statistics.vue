@@ -120,14 +120,12 @@
             <div class="row">
               <div class="col-md-3 col-sm-3">
                 <ul class="dashboard-list">
-                  <!-- <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' " class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)" :class="{'onlinelist-active': activeUserid == onlineUsername.userid}"> -->
                   <li v-for="message in messages |filterBy searchQuery in 'title' 'messageType' " class="dashboard-list-item" @click="messageDetail(message.messageid, message.content, message.title)" :class="{'messagelist-active': activeMessageid == message.messageid}">
                     <header class="message-title">
                       <h6 v-if="message.title.length > 10">{{ message.title.substring(0,10) }} ...</h6>
                       <h6 v-else>{{ message.title }}</h6>
                     </header>
                   </li>
-                  <!-- </li> -->
                 </ul>
               </div>
               <div class="col-md-6 col-sm-6" v-if="mescontent">
@@ -170,7 +168,7 @@
     border-radius: 5px;
     cursor: pointer;
     height: 438px;
-    width: 240px;
+    width: 205px;
     padding-bottom: 5px;
   }
 
@@ -220,7 +218,8 @@
 
   .message-detail {
     margin-top: -35px;
-    margin-left: -20px;
+    margin-left: 3%;
+    margin-right: 1%;
   }
 
   h7 {
@@ -232,7 +231,7 @@
 
   .message-detail h7 {
     color: #1ABC9C;
-    margin-left: 26%;
+    margin-left: 23%;
     margin-bottom: 10px;
   }
   hr {
@@ -247,7 +246,7 @@
   }
 
   .input-zd {
-    width: 240px;
+    width: 205px;
     height: 36px;
   }
 

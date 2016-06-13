@@ -23,6 +23,9 @@
       <li>
         <a v-link="{ path: '/register' }"><i class="fa fa-list-alt"></i> 用户创建</a>
       </li>
+      <li>
+        <a v-link="{ path: '/feedback' }"><i class="fa fa-file-text-o"></i> 用户反馈</a>
+      </li>
     </ul>
   </nav>
 </template>
