@@ -18,7 +18,8 @@
           typeid: '',
           description: ''
         },
-        usernames: []
+        usernames: [],
+        messageTypes: []
       }
     },
 
@@ -45,10 +46,20 @@
           });
         }
       });
+      var mesTypes = conf.messageTypes;
+      for (var i in mesTypes) {
+        this.messageTypes.push({
+          type: mesTypes[i],
+          typeid: +i + 1
+        });
+      }
     },
     // Methods we want to use in our application are registered here
     methods: {
       sendMessage: function() {
+        if (+this.message.typeid == "0") {
+          return;
+        }
         var self = this;
         var messageid = new Date().getTime();
         var mesContent = {
@@ -190,12 +201,18 @@
 
         <div class="form-group">
           <select class="form-control" v-model="message.typeid">
-            <option value="1" selected>消息类型1</option>
+            <option value="0" selected>
+              --请选择消息类型--
+            </option>
+            <option v-for="msg in messageTypes" v-bind:value="msg.typeid">
+              {{msg.type}}
+            </option>
+            <!-- <option value="1" selected>消息类型1</option>
             <option value="2">消息类型2</option>
             <option value="3">消息类型3</option>
             <option value="4">消息类型4</option>
             <option value="5">消息类型5</option>
-            <option value="6">消息类型6</option>
+            <option value="6">消息类型6</option> -->
           </select>
         </div>
 
