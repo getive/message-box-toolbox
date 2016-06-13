@@ -1,20 +1,32 @@
 <script>
   var env_conf = require('../../config/env_development.json');
   var socket = require('socket.io-client')(env_conf.socketServerUrl);
+  var marked = require('marked');
+  marked.setOptions({
+    renderer: new marked.Renderer(),
+    gfm: true,
+    tables: true,
+    breaks: false,
+    pedantic: false,
+    sanitize: true,
+    smartLists: true,
+    smartypants: false
+  });
 
   module.exports = {
     name: 'Statistics',
     data: function() {
       return {
-        onlineUserNames: [],
-        count1: [],
-        count2: [],
         onlineCount: '',
-        allCount: '',
-        clickUsername: '',
-        clickName: '',
-        activeUserid: '',
-        searchQuery: ''
+        activeMessageid: '',
+        searchQuery: '',
+        messages: [],
+        messageTitle: '',
+        messageDesc: '',
+        usernames: [],
+        mescontent: false,
+        messageUnreadCount: '',
+        messageContent: ''
       }
     },
 
@@ -39,101 +51,49 @@
         online_stat: true
       }, function(err, users) {
         self.onlineCount = users.length;
-        for (var i in users) {
-          self.onlineUserNames.push({
-            username: users[i].username,
-            userid: users[i].userid
-          });
-        }
       });
       // 用户登录成功在线人数+1
       socket.on('onlineCountAdd', function(obj) {
         self.onlineCount = self.onlineCount + 1;
-        // 添加新加入的用户
-        self.User.findOne({
-          username: obj.username
-        }, function(err, user) {
-          self.onlineUserNames.push({
-            username: obj.username,
-            userid: user.userid
-          });
-        });
       });
       // 用户退出在线人数-1
       socket.on('onlineCountDel', function(obj) {
         self.onlineCount = self.onlineCount - 1;
-        if (self.clickName == obj.username) { // 如果退出的用户是正在点击的用户,将清空消息读取状态
-          // 清空显示的数据
-          var count1 = self.count1.length;
-          var count2 = self.count2.length;
-          self.count1.splice(0, count1);
-          self.count2.splice(0, count2);
-          self.allCount = '';
-          self.clickUsername = '';
-          self.activeUserid = '';
-        }
-        for (var i = 0; i < self.onlineUserNames.length; i++) {
-          if (self.onlineUserNames[i].username == obj.username) {
-            self.onlineUserNames.splice(i, 1);
-          }
+      });
+      // 获取所有message信息
+      this.Message.find({}, function(err, messages) {
+        for (var i in messages) {
+          self.messages.push({
+            title: messages[i].title,
+            messageid: messages[i].id,
+            content: marked(messages[i].content),
+            messageType: messages[i].type
+          });
         }
       });
     },
     methods: {
-      username(userid, username) {
+      messageDetail(messageid, content, title) {
         var self = this;
-        // 清空显示的数据
-        var count1 = this.count1.length;
-        var count2 = this.count2.length;
-        this.count1.splice(0, count1);
-        this.count2.splice(0, count2);
-        this.allCount = '';
-        this.clickUsername = '';
-        this.activeUserid = '';
-        // 修改点击的样式
-        this.activeUserid = userid;
-        this.clickUsername = "用户名：" + username;
-        this.clickName = username;
+        this.messageContent = '';
+        this.activeMessageid = messageid;
+        this.messageTitle = title;
+        this.messageContent = content;
+        this.mescontent = true;
+        this.usernames.splice(0, this.usernames.length);
         this.Summary.find({
-          userid: userid
+          'message.id': messageid,
+          'message.read': 'false'
         }, function(err, summaries) {
-          var allCount = 0;
-          var readCount = 0;
-          var unreadCount = 0;
+          self.messageUnreadCount = summaries.length;
           for (var i in summaries) {
-            allCount = allCount + summaries[i].message.length;
-            unreadCount = unreadCount + summaries[i].count;
-            readCount = allCount - unreadCount;
-          }
-          self.allCount = "已读条数：" + readCount + "/" + allCount;
-        });
-        //
-        this.Summary.find({
-          userid: userid
-        }).sort({
-          'typeid': 'asc'
-        }).exec(function(err, summaries) {
-          var msgTypeAllCount = 0;
-          var msgTypeReadCount = 0;
-          var msgTypes = env_conf.messageTypes;
-          for (var i in msgTypes) {
-            msgTypeAllCount = summaries[i].message.length;
-            msgTypeReadCount = summaries[i].message.length - summaries[i].count;
-            if (i < 3) {
-              self.count1.push({
-                total: msgTypeAllCount,
-                read: msgTypeReadCount,
-                title: env_conf.messageTypes[i]
+            self.User.findOne({
+              userid: summaries[i].userid
+            }, function(err, user) {
+              self.usernames.push({
+                username: user.username
               });
-            } else {
-              self.count2.push({
-                total: msgTypeAllCount,
-                read: msgTypeReadCount,
-                title: env_conf.messageTypes[i]
-              });
-            }
-            msgTypeAllCount = 0;
-            msgTypeReadCount = 0;
+            });
           }
         });
       }
@@ -147,55 +107,52 @@
       <!-- add an message form -->
       <div class="panel panel-success">
         <div class="panel-heading">
-          <span>数据统计</span>
+          <span>数据统计</span>&emsp;&emsp;( 当前在线用户数: <span style="color: #ddd">{{onlineCount}} </span>)
         </div>
         <div class="panel-body">
-          <div class="search" style="display:inline-block">
+          <div class="form-group search">
             <input type="text" value="" placeholder="搜索" class="form-control input-zd" v-model="searchQuery" />
           </div>
-          <div class="form-group online-count" style="display:inline-block;width:130px;">
+          <!-- <div class="form-group online-count">
             <p>当前在线人数: <span style="color:red">{{onlineCount}}</span></p>
-          </div>
+          </div> -->
           <div class="form-group">
             <div class="row">
               <div class="col-md-3 col-sm-3">
                 <ul class="dashboard-list">
-                  <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' " class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)" :class="{'onlinelist-active': activeUserid == onlineUsername.userid}">
-                    <article>
-                      {{onlineUsername.username}}
-                    </article>
+                  <!-- <li v-for="onlineUsername in onlineUserNames |filterBy searchQuery in 'username' " class="dashboard-list-item" @click="username(onlineUsername.userid,onlineUsername.username)" :class="{'onlinelist-active': activeUserid == onlineUsername.userid}"> -->
+                  <li v-for="message in messages |filterBy searchQuery in 'title' 'messageType' " class="dashboard-list-item" @click="messageDetail(message.messageid, message.content, message.title)" :class="{'messagelist-active': activeMessageid == message.messageid}">
+                    <header class="message-title">
+                      <h6 v-if="message.title.length > 10">{{ message.title.substring(0,10) }} ...</h6>
+                      <h6 v-else>{{ message.title }}</h6>
+                    </header>
                   </li>
+                  <!-- </li> -->
                 </ul>
               </div>
-              <div class="col-md-9 col-sm-9 message">
-                <h6>消息读取状态</h6>
-                <hr>
-                <div class="row msg">
-                  <div class="col-md-6 col-sm-6">
-                    <p>{{clickUsername}}</p>
-                  </div>
-                  <div class="col-md-6 col-sm-6">
-                    <p>{{allCount}}</p>
-                  </div>
-                </div>
-                <hr>
-                <div class="row msg">
-                  <div class="col-md-6 col-sm-6">
-                    <ul class="msg-types">
-                      <li v-for="c1 in count1" style="list-style-type: none">
-                        {{c1.title}}：{{c1.read}}/{{c1.total}}
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col-md-6 col-sm-6">
-                    <ul class="msg-types">
-                      <li v-for="c2 in count2" style="list-style-type: none">
-                        {{c2.title}}：{{c2.read}}/{{c2.total}}
-                      </li>
-                    </ul>
+              <div class="col-md-6 col-sm-6" v-if="mescontent">
+                <div class="message-detail">
+                  <h6>消息详情</h6>
+                  <hr/>
+                  <h7>{{messageTitle.length > 14 ? messageTitle.substring(0,14) : messageTitle}}</h7>
+                  <div class="content">
+                    {{{messageContent}}}
                   </div>
                 </div>
               </div>
+              <div class="col-md-3 col-sm-3" v-if="mescontent">
+                <div class="read-detail">
+                  <h6>读取详情</h6>
+                  <hr/>
+                  <h7>以下用户未读 (<span style="color:red">{{messageUnreadCount}}</span>)</h7>
+                  <ul>
+                    <li v-for="user in usernames">
+                      {{user.username}}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div v-if="!mescontent" class="empty-placeholder">请选择消息查看详情</div>
             </div>
           </div>
         </div>
@@ -207,11 +164,14 @@
 <style>
   .dashboard-list {
     overflow: auto;
+    margin-top: -20px;
+    margin-bottom: -15px;
     border: 2px solid #ddd;
     border-radius: 5px;
     cursor: pointer;
-    height: 350px;
-    width: 193px;
+    height: 438px;
+    width: 240px;
+    padding-bottom: 5px;
   }
 
   .dashboard-list-item {
@@ -219,53 +179,124 @@
     cursor: pointer;
     border-bottom: 1px solid #eee;
     list-style-type: none;
-    font-size: 16px;
-    line-height: 25px;
-    color: #1ABC9C;
+    line-height: 35px;
+    color: #666;
     margin-left: -40px;
     padding-left: 15px;
+    height: 35px;
   }
 
   .dashboard-list-item:hover {
+    color: #666;
+    background-color: #eee;
+  }
+
+  .messagelist-active {
     color: #1ABC9C;
     background-color: #eee;
   }
 
-  .form-group p {
-    margin-left: 1%;
-  }
-
-  .msg {
-    margin-left: 20px;
-  }
-
-  .msg-types {
-    line-height: 35px;
-    margin-left: -38px;
-  }
-
-  .online-count {
-    margin-left: 15px;
-    width: 300px;
-  }
-
-  .input-zd {
-    width: 193px;
-    height: 36px;
-  }
-
-  .onlinelist-active {
-    background-color: #1ABC9C;
-    color: #fff;
-  }
-
-  .onlinelist-active:hover {
-    background-color: #1ABC9C;
-    color: #fff;
+  .messagelist-active:hover {
+    color: #1ABC9C;
+    background-color: #eee;
   }
 
   ul,
   ol {
     margin-bottom: 0px;
+  }
+
+  .message-title h6 {
+    display: inline-block;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .message-desc {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .message-detail {
+    margin-top: -35px;
+    margin-left: -20px;
+  }
+
+  h7 {
+    display: inline-block;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .message-detail h7 {
+    color: #1ABC9C;
+    margin-left: 26%;
+    margin-bottom: 10px;
+  }
+  hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 0;
+    border-top: 1px solid #eee;
+  }
+
+  .read-detail {
+    margin-top: -35px;
+  }
+
+  .input-zd {
+    width: 240px;
+    height: 36px;
+  }
+
+  .read-detail ul {
+    overflow: auto;
+    margin-bottom: -15px;
+    /*border: 2px solid #ddd;*/
+    /*border-radius: 5px;*/
+    cursor: pointer;
+    height: 360px;
+    width: 240px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .read-detail li {
+    list-style-type: none;
+    margin-left: -35px;
+  }
+
+  .empty-placeholder {
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+    color: #658399;
+    font-weight: bold;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 12%;
+    text-align: center;
+    width: 100%;
+  }
+
+  .message-detail .content {
+    height: 320px;
+    overflow: auto;
+  }
+
+  .online-count {
+    display: inline-block;
+    width: 130px;
+
+  }
+
+  .search {
+    display:inline-block;
+    margin-bottom: 25px;
   }
 </style>
