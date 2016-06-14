@@ -83,6 +83,9 @@
           sendtime: self.getNowFormatDate()
         }
         if (self.message.userid != "00000000") { // private消息
+          newMessage.type = 'private';
+          newMessage.userid = self.message.userid;
+          self.Message.create(newMessage);
           this.Summary.findOne({
             userid: userid,
             typeid: typeid
@@ -107,9 +110,6 @@
                 }
               }
             }
-            newMessage.type = 'private';
-            newMessage.userid = self.message.userid;
-            self.Message.create(newMessage);
             self.Summary.update(query, doc).exec();
             self.Summary.update(query, push).exec();
           });

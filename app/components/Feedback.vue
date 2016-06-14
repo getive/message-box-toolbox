@@ -69,7 +69,7 @@
             <div class="row">
               <div class="col-md-3 col-sm-3">
                 <ul class="feedback-dashboard-list">
-                  <li v-for="feedback in feedbacks" class="dashboard-list-item" @click="feedbackDetail(feedback.userid, feedback.time, feedback.content)" :class="{'feedbacklist-active': feedback.time == activeFeedback}">
+                  <li v-for="feedback in feedbacks" class="feedback-list-item" @click="feedbackDetail(feedback.userid, feedback.time, feedback.content)" :class="{'feedbacklist-active': feedback.time == activeFeedback}">
                     <header class="feedback-title">
                       <h6 v-if="feedback.content.length > 10">{{ feedback.content.substring(0,10) }}...</h6>
                       <h6 v-else>{{feedback.content}}</h6>
@@ -109,7 +109,7 @@
     padding-bottom: 5px;
   }
 
-  .dashboard-list-item {
+  .feedback-list-item {
     clear: both;
     cursor: pointer;
     border-bottom: 1px solid #eee;
@@ -120,8 +120,7 @@
     padding-left: 15px;
     height: 35px;
   }
-
-  .dashboard-list-item:hover {
+  .feedback-list-item:hover {
     color: #666;
     background-color: #eee;
   }

@@ -120,7 +120,7 @@
             <div class="row">
               <div class="col-md-3 col-sm-3">
                 <ul class="dashboard-list">
-                  <li v-for="message in messages |filterBy searchQuery in 'title' 'messageType' " class="dashboard-list-item" @click="messageDetail(message.messageid, message.content, message.title)" :class="{'messagelist-active': activeMessageid == message.messageid}">
+                  <li v-for="message in messages |filterBy searchQuery in 'title' 'messageType' " class="statistics-list-item" @click="messageDetail(message.messageid, message.content, message.title)" :class="{'messagelist-active': activeMessageid == message.messageid}">
                     <header class="message-title">
                       <h6 v-if="message.title.length > 10">{{ message.title.substring(0,10) }} ...</h6>
                       <h6 v-else>{{ message.title }}</h6>
@@ -172,7 +172,7 @@
     padding-bottom: 5px;
   }
 
-  .dashboard-list-item {
+  .statistics-list-item {
     clear: both;
     cursor: pointer;
     border-bottom: 1px solid #eee;
@@ -184,7 +184,7 @@
     height: 35px;
   }
 
-  .dashboard-list-item:hover {
+  .statistics-list-item:hover {
     color: #666;
     background-color: #eee;
   }
