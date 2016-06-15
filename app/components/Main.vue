@@ -1,4 +1,5 @@
 <script>
+  import Modal from './Modal.vue'
   var conf = require('../../config/env_development.json');
   var io = require('socket.io-client');
   var socket = io.connect(conf.socketServerUrl, {
@@ -19,7 +20,10 @@
           description: ''
         },
         usernames: [],
-        messageTypes: []
+        messageTypes: [],
+        showModal: false,
+        modalHeaderMsg: '',
+        modalBodyMsg: ''
       }
     },
 
@@ -36,7 +40,13 @@
         }) => global.Message
       }
     },
+
+    components: {
+      Modal
+    },
+
     ready: function() {
+      this.message.typeid = "1";
       var self = this;
       this.User.find({}, function(err, users) {
         for (var i in users) {
@@ -57,7 +67,10 @@
     // Methods we want to use in our application are registered here
     methods: {
       sendMessage: function() {
-        if (+this.message.typeid == "0") {
+        if (this.message.author == '' || this.message.title == '') {
+          this.showModal = true;
+          this.modalHeaderMsg = "系统提示";
+          this.modalBodyMsg = "输入有错误! "
           return;
         }
         var self = this;
@@ -201,9 +214,6 @@
 
         <div class="form-group">
           <select class="form-control" v-model="message.typeid">
-            <option value="0" selected>
-              --请选择消息类型--
-            </option>
             <option v-for="msg in messageTypes" v-bind:value="msg.typeid">
               {{msg.type}}
             </option>
@@ -226,7 +236,10 @@
       </div>
     </div>
   </div>
-
+  <modal :show.sync="showModal">
+    <h6 slot="header">{{modalHeaderMsg}}</h6>
+    <p slot="body">{{modalBodyMsg}}</p>
+  </modal>
   <!-- main body of our application -->
 </template>
 <style>

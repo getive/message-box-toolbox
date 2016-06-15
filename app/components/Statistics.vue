@@ -122,7 +122,7 @@
                 <ul class="dashboard-list">
                   <li v-for="message in messages |filterBy searchQuery in 'title' 'messageType' " class="statistics-list-item" @click="messageDetail(message.messageid, message.content, message.title)" :class="{'messagelist-active': activeMessageid == message.messageid}">
                     <header class="message-title">
-                      <h6 v-if="message.title.length > 10">{{ message.title.substring(0,10) }} ...</h6>
+                      <h6 v-if="message.title.length > 8">{{ message.title.substring(0,8) }} ...</h6>
                       <h6 v-else>{{ message.title }}</h6>
                     </header>
                   </li>
