@@ -7,13 +7,6 @@
         required: true,
         twoWay: true
       }
-    },
-    data() {
-      return {
-        modalBodyMsg: '',
-        modalFooterMsg: '',
-        modalHeaderMsg: ''
-      }
     }
   }
 </script>
@@ -39,7 +32,7 @@
 
             <button class="btn btn-success footer-btn"
               @click="show = false">
-              确认
+              关闭
             </button>
           </slot>
         </div>

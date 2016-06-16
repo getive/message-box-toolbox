@@ -48,7 +48,9 @@
     ready: function() {
       this.message.typeid = "1";
       var self = this;
-      this.User.find({}, function(err, users) {
+      this.User.find({}).sort({
+        'username': 'asc'
+      }).exec(function(err, users) {
         for (var i in users) {
           self.usernames.push({
             username: users[i].username,
@@ -70,7 +72,7 @@
         if (this.message.author == '' || this.message.title == '') {
           this.showModal = true;
           this.modalHeaderMsg = "系统提示";
-          this.modalBodyMsg = "输入有错误! "
+          this.modalBodyMsg = "请确定发送方、标题填写了内容！"
           return;
         }
         var self = this;
@@ -124,9 +126,12 @@
               }
             }
             self.Summary.update(query, doc).exec();
-            self.Summary.update(query, push).exec();
+            self.Summary.update(query, push, null, function(err, raw) {
+              if (!err) {
+                socket.emit('private message', mesContent);
+              }
+            });
           });
-          socket.emit('private message', mesContent);
         } else { // public消息
           newMessage.type = 'public';
           self.Message.create(newMessage);
@@ -155,10 +160,13 @@
                 }
               };
               self.Summary.update(query, doc).exec();
-              self.Summary.update(query, push).exec();
+              self.Summary.update(query, push, null, function(err, raw) {
+                if (!err) {
+                  socket.emit('public message', mesContent);
+                }
+              });
             }
           });
-          socket.emit('public message', mesContent);
         }
         setTimeout(function() {
           self.message.title = "";
@@ -256,7 +264,7 @@
   }
 
   .form-user .form-group .form-control {
-    width: 100%;
+    width: 101%;
   }
 
   .form-username {
