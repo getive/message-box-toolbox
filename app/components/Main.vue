@@ -5,7 +5,8 @@
   var socket = io.connect(conf.socketServerUrl, {
     'force new connection': true
   });
-
+  var uuid = require('node-uuid');
+  var simplemde;
   module.exports = {
     name: 'Main',
     // Here we can register any values or collections that hold data
@@ -65,22 +66,26 @@
           typeid: +i + 1
         });
       }
+      simplemde = new SimpleMDE({
+        element: document.getElementById("textareaContent")
+      });
     },
     // Methods we want to use in our application are registered here
     methods: {
       sendMessage: function() {
-        if (this.message.author == '' || this.message.title == '') {
+        if (this.message.author == '' || this.message.title == '' || simplemde.value() == '') {
           this.showModal = true;
           this.modalHeaderMsg = "系统提示";
-          this.modalBodyMsg = "请确定发送方、标题填写了内容！"
+          this.modalBodyMsg = "请确定发送方、标题、内容都不为空！"
           return;
         }
+        var description = simplemde.value();
         var self = this;
-        var messageid = new Date().getTime();
+        var messageid = uuid.v1();
         var mesContent = {
           userid: self.message.userid,
           title: self.message.title,
-          desc: self.message.description.length > 36 ? self.message.description.substring(0, 36) + "..." : self.message.description,
+          desc: description.length > 36 ? description.substring(0, 36) + "..." : description,
           typeid: +self.message.typeid
         }
         var typeid = +self.message.typeid;
@@ -93,8 +98,8 @@
           type: '',
           title: self.message.title,
           author: self.message.author,
-          desc: self.message.description.substring(0, 48),
-          content: self.message.description,
+          desc: description.substring(0, 48),
+          content: description,
           sendtime: self.getNowFormatDate()
         }
         if (self.message.userid != "00000000") { // private消息
@@ -119,7 +124,7 @@
                 message: {
                   id: messageid,
                   title: self.message.title,
-                  desc: self.message.description.substring(0, 48),
+                  desc: description.substring(0, 48),
                   sendtime: self.getNowFormatDate(),
                   read: false
                 }
@@ -153,7 +158,7 @@
                   message: {
                     id: messageid,
                     title: self.message.title,
-                    desc: self.message.description.substring(0, 48),
+                    desc: description.substring(0, 48),
                     sendtime: self.getNowFormatDate(),
                     read: false
                   }
@@ -173,7 +178,7 @@
           self.message.author = "";
           self.message.userid = "00000000";
           self.message.typeid = "1";
-          self.message.description = "";
+          simplemde.value('');
         }, 700);
       },
       getNowFormatDate: function() {
@@ -225,18 +230,12 @@
             <option v-for="msg in messageTypes" v-bind:value="msg.typeid">
               {{msg.type}}
             </option>
-            <!-- <option value="1" selected>消息类型1</option>
-            <option value="2">消息类型2</option>
-            <option value="3">消息类型3</option>
-            <option value="4">消息类型4</option>
-            <option value="5">消息类型5</option>
-            <option value="6">消息类型6</option> -->
           </select>
         </div>
 
         <div class="form-group">
           <form>
-            <textarea name="content" data-provide="markdown" rows="10" v-model="message.description" placeholder="内容" data-hidden-buttons="cmdUrl cmdImage"></textarea>
+            <textarea name="content" id="textareaContent" rows="8" v-model="message.description" placeholder="内容" data-hidden-buttons="cmdUrl cmdImage"></textarea>
           </form>
         </div>
 
