@@ -47,7 +47,7 @@
     </div>
     <div class="dashboard animated fadeIn" v-if="isLogin">
       <dashboard-header></dashboard-header>
-      <router-view :is-login.sync="isLogin" :user-name.once="userName" :socket.sync="socket"></router-view>
+      <router-view></router-view>
     </div>
   </div>
 </template>

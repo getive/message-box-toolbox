@@ -132,7 +132,7 @@
                 <div class="message-detail">
                   <h6>消息详情</h6>
                   <hr/>
-                  <h7>{{messageTitle.length > 14 ? messageTitle.substring(0,14) : messageTitle}}</h7>
+                  <label>{{messageTitle.length > 14 ? messageTitle.substring(0,14) : messageTitle}}</label>
                   <div class="content">
                     {{{messageContent}}}
                   </div>
@@ -142,7 +142,7 @@
                 <div class="read-detail">
                   <h6>读取详情</h6>
                   <hr/>
-                  <h7>以下用户未读 (<span style="color:red">{{messageUnreadCount}}</span>)</h7>
+                  <label>以下用户未读 (<span style="color:red">{{messageUnreadCount}}</span>)</label>
                   <ul>
                     <li v-for="user in usernames">
                       {{user.username}}
@@ -222,14 +222,14 @@
     margin-right: 1%;
   }
 
-  h7 {
+  label {
     display: inline-block;
     margin: 0;
     font-size: 16px;
     font-weight: 600;
   }
 
-  .message-detail h7 {
+  .message-detail label {
     color: #1ABC9C;
     margin-left: 23%;
     margin-bottom: 10px;

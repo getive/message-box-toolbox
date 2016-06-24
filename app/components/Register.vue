@@ -6,7 +6,7 @@
         username: '',
         userid: '',
         password: '',
-        RegisterForm: ''
+        registerForm: ''
       }
     },
 

@@ -156,5 +156,7 @@
   .feedback-content {
     height: 360px;
     overflow: auto;
+    word-break: break-all;
+    word-wrap: break-word;
   }
 </style>
