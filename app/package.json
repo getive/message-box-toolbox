@@ -22,6 +22,7 @@
     "font-awesome": "^4.5.0",
     "jquery": "^2.2.1",
     "marked": "^0.3.5",
+    "node-uuid": "^1.4.7",
     "socket.io-client": "^1.4.5",
     "vue": "^1.0.16",
     "vue-router": "^0.7.11",
